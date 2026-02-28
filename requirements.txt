@@ -1,0 +1,8 @@
+websockets
+aiohttp
+python-dotenv
+pandas
+numpy
+scipy
+scikit-learn
+xgboost
