@@ -93,10 +93,10 @@ async def _unsubscribe_token(ws, mint: str) -> None:
 
 
 async def _viability_check(
-    conn: db.sqlite3.Connection, ws, mint: str
+    conn: db.sqlite3.Connection, ws, mint: str, sleep_sec: float | None = None
 ) -> None:
     """Run 60-second viability check; kill or promote the token."""
-    await asyncio.sleep(VIABILITY_WINDOW_SEC)
+    await asyncio.sleep(VIABILITY_WINDOW_SEC if sleep_sec is None else sleep_sec)
     stats = db.get_trade_stats(conn, mint, VIABILITY_WINDOW_SEC)
     buys = stats["buy_count"]
     buyers = stats["unique_buyers"]
@@ -134,6 +134,61 @@ async def _finish_collection(
     log.info("DONE  %s  (collection window closed)", mint)
 
 
+async def _recover_active_tokens(conn: db.sqlite3.Connection, ws) -> None:
+    """On startup/reconnect, re-subscribe and re-schedule tasks for in-progress tokens."""
+    now = time.time()
+    n_watching = n_tracking = 0
+
+    for row in conn.execute(
+        "SELECT mint, created_at FROM tokens WHERE status = 'watching' ORDER BY created_at"
+    ).fetchall():
+        mint, created_at = row["mint"], row["created_at"]
+        elapsed = now - created_at
+        if elapsed < VIABILITY_WINDOW_SEC:
+            # Still inside viability window — wait out the remainder
+            await _subscribe_token(ws, mint)
+            asyncio.create_task(
+                _viability_check(conn, ws, mint, sleep_sec=VIABILITY_WINDOW_SEC - elapsed)
+            )
+        else:
+            # Past window — decide immediately from stored trades
+            stats = db.get_trade_stats(conn, mint, VIABILITY_WINDOW_SEC)
+            if stats["buy_count"] < MIN_BUYS or stats["unique_buyers"] < MIN_UNIQUE_BUYERS:
+                db.set_token_status(conn, mint, "dead")
+                log.info("DEAD  %s  (recovery verdict)", mint)
+            elif elapsed < COLLECTION_WINDOW_SEC:
+                db.set_token_status(conn, mint, "tracking")
+                await _subscribe_token(ws, mint)
+                asyncio.create_task(_finish_collection(conn, ws, mint))
+                log.info("TRACK %s  (recovery verdict)", mint)
+            else:
+                db.set_token_status(conn, mint, "done")
+                log.info("DONE  %s  (recovery: window elapsed)", mint)
+        n_watching += 1
+
+    for row in conn.execute(
+        "SELECT mint, created_at FROM tokens WHERE status = 'tracking' ORDER BY created_at"
+    ).fetchall():
+        mint, created_at = row["mint"], row["created_at"]
+        elapsed = now - created_at
+        if elapsed < COLLECTION_WINDOW_SEC:
+            await _subscribe_token(ws, mint)
+            asyncio.create_task(_finish_collection(conn, ws, mint))
+            log.info(
+                "RESUME %s  (%.0fs remaining)", mint, COLLECTION_WINDOW_SEC - elapsed
+            )
+        else:
+            db.set_token_status(conn, mint, "done")
+            log.info("DONE  %s  (recovery: window elapsed)", mint)
+        n_tracking += 1
+
+    if n_watching or n_tracking:
+        log.info(
+            "Recovery complete: %d watching resolved, %d tracking resumed",
+            n_watching, n_tracking,
+        )
+
+
 async def _listen(conn: db.sqlite3.Connection) -> None:
     reconnect_delay = 2
     while True:
@@ -149,6 +204,7 @@ async def _listen(conn: db.sqlite3.Connection) -> None:
                 _active_subscriptions.clear()
                 await ws.send(json.dumps({"method": "subscribeNewToken"}))
                 log.info("Subscribed to new-token events")
+                await _recover_active_tokens(conn, ws)
 
                 async for raw in ws:
                     try:
