@@ -195,23 +195,33 @@ async def main() -> None:
     conn = db.init_db(DB_PATH)
     log.info("Database initialised at %s", DB_PATH)
 
+    stop = asyncio.Event()
     loop = asyncio.get_running_loop()
 
     def _shutdown():
         log.info("Shutdown signal received")
-        for task in asyncio.all_tasks(loop):
-            task.cancel()
+        stop.set()
 
     for sig in (signal.SIGINT, signal.SIGTERM):
         loop.add_signal_handler(sig, _shutdown)
 
-    await asyncio.gather(
-        _listen(conn),
-        enricher_mod.run(conn),
-        price_fetcher_mod.run(conn),
-        return_exceptions=True,
-    )
+    tasks = [
+        asyncio.create_task(_listen(conn)),
+        asyncio.create_task(enricher_mod.run(conn)),
+        asyncio.create_task(price_fetcher_mod.run(conn)),
+    ]
+
+    await stop.wait()
+
+    log.info("Shutting down...")
+    for task in tasks:
+        task.cancel()
+    await asyncio.gather(*tasks, return_exceptions=True)
+    log.info("Shutdown complete")
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        pass
