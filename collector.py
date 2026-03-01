@@ -30,7 +30,7 @@ from config import (
 )
 
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.DEBUG,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
 )
 log = logging.getLogger("collector")
@@ -155,6 +155,14 @@ async def _listen(conn: db.sqlite3.Connection) -> None:
                         event = json.loads(raw)
                     except json.JSONDecodeError:
                         continue
+
+                    log.debug("RAW keys=%s  txType=%s  method=%s  mint=%s  hasBCK=%s",
+                        list(event.keys()),
+                        event.get("txType"),
+                        event.get("method"),
+                        event.get("mint"),
+                        "bondingCurveKey" in event,
+                    )
 
                     method = event.get("txType") or event.get("method") or ""
                     mint = event.get("mint")
