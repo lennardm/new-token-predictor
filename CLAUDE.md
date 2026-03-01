@@ -42,7 +42,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `price_fetcher.run()` polls CoinGecko at the top of every 5-minute cycle for macro data before processing token snapshots
 - DexScreener batch endpoint: `/tokens/v1/solana/{mint1,mint2,...}` (up to 30 per call)
 - GoPlus used as fallback if RugCheck fails
-- Running ATH market cap computed across snapshots (DexScreener doesn't expose ATH directly)
+- ATH data: DexScreener is primary for price/mc/liquidity/volume (batched); SolanaTracker is always called afterward for `ath_price_usd` (from `data["ath"]`); `ath_market_cap_usd` is derived as `ath_price × (market_cap / current_price)` — valid for fixed-supply pump.fun tokens
+- Startup recovery: on every connect/reconnect, `_recover_active_tokens()` re-subscribes `watching`/`tracking` tokens and reschedules their viability/collection tasks based on elapsed time; tokens past their windows are resolved immediately from stored trade data
+- `_viability_check` accepts optional `sleep_sec` so recovery can wait out only the remaining viability window rather than a full 60s
 - `pumpfun_launch_rate_1h` is not stored — computed at analysis time from raw token timestamps to avoid redundancy
 - `market_snapshots` dedup uses `CREATE UNIQUE INDEX ON market_snapshots(CAST(ts / 300 AS INTEGER))` — SQLite does not support expressions in inline `UNIQUE` constraints
 
@@ -67,7 +69,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | DexScreener (55 RPM cap) | Batched, rate-limited via `_DS_MIN_INTERVAL` |
 | RugCheck / GoPlus | On-demand per token, 45s after creation |
 | CryptoPanic (100 req/month free) | Sampled — only tokens with buy volume ≥ `CRYPTOPANIC_MIN_BUY_SOL` (default 5 SOL) |
-| SolanaTracker | Fallback when DexScreener has no data |
+| SolanaTracker | ATH data at every snapshot + full fallback when DexScreener has no data |
 
 ### CryptoPanic sampling
 
@@ -100,4 +102,4 @@ python analyzer.py     # offline analysis after data collection
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `CRYPTOPANIC_TOKEN` | Optional | CryptoPanic API key for social mentions |
-| `SOLANATRACKER_KEY` | Optional | SolanaTracker API key (fallback price source) |
+| `SOLANATRACKER_KEY` | Optional | SolanaTracker API key (ATH data + fallback price source) |
