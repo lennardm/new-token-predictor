@@ -32,13 +32,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Key Design Decisions
 
 - Single persistent WebSocket to `pumpportal.fun` with exponential backoff on disconnect
+- Graceful shutdown via `asyncio.Event`: SIGINT/SIGTERM sets the event, `main()` cancels subtasks and awaits them — no `CancelledError` traceback
+- New token detection: `not event.get("txType") and "bondingCurveKey" in event` — trade events also carry `bondingCurveKey`, so `txType` absence is required to distinguish creation events
+- `_unsubscribe_token` swallows `ConnectionClosed` — background viability/collection tasks survive WebSocket reconnects without crashing
+- `_active_subscriptions` cleared on each reconnect so the new connection starts with a clean slate
+- `data/` directory created automatically by `db.init_db()` via `os.makedirs(..., exist_ok=True)`
 - Viability filter: < 10 buys OR < 5 unique buyers in first 60s → status `dead`, unsubscribed
-- All background services (`enricher`, `price_fetcher`) launched together via `asyncio.gather()` in `collector.py`
+- All background services (`enricher`, `price_fetcher`) launched as tasks in `main()`, awaited on shutdown
 - `price_fetcher.run()` polls CoinGecko at the top of every 5-minute cycle for macro data before processing token snapshots
 - DexScreener batch endpoint: `/tokens/v1/solana/{mint1,mint2,...}` (up to 30 per call)
 - GoPlus used as fallback if RugCheck fails
 - Running ATH market cap computed across snapshots (DexScreener doesn't expose ATH directly)
 - `pumpfun_launch_rate_1h` is not stored — computed at analysis time from raw token timestamps to avoid redundancy
+- `market_snapshots` dedup uses `CREATE UNIQUE INDEX ON market_snapshots(CAST(ts / 300 AS INTEGER))` — SQLite does not support expressions in inline `UNIQUE` constraints
 
 ## Macro Features (market_snapshots → analyzer.py)
 
