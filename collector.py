@@ -162,8 +162,9 @@ async def _listen(conn: db.sqlite3.Connection) -> None:
                     if not mint:
                         continue
 
-                    # New token creation event (no txType field, has bondingCurveKey)
-                    if "bondingCurveKey" in event or method == "create":
+                    # New token creation event — has bondingCurveKey but no txType
+                    # (trade events also carry bondingCurveKey, so txType absence is required)
+                    if not event.get("txType") and ("bondingCurveKey" in event or method == "create"):
                         token_data = _extract_token(event)
                         db.insert_token(conn, token_data)
                         log.info(
