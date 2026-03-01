@@ -2,6 +2,20 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Goal
+
+**Can we predict, with useful certainty, whether a new pump.fun token will reach a target market cap?**
+
+Given all trade data from the first X minutes of a token's life plus enrichment metrics (rug score, holder distribution, social mentions, macro market conditions), train a classifier to estimate the probability that the token will reach market cap thresholds such as $20k, $30k, $50k, $100k, $1M.
+
+Roadmap:
+1. **Data collection** (current focus) — run `collector.py` continuously to build a labelled dataset; `price_snapshots` at 1h/2h/4h/8h/24h provide the ground-truth outcome labels
+2. **Prediction** — use `analyzer.py` to train and evaluate models; target: probability estimates with better-than-random accuracy (baseline is ~50% for binary thresholds, but even 55–60% edge is tradeable)
+3. **Live inference** — feed real-time trade data and metrics into the trained model as new tokens arrive
+4. **Trading bot** — act on predicted probabilities: buy tokens above a confidence threshold, sell at target or stop-loss
+
+The key question for step 2: at what prediction confidence does the signal become actionable? That depends on the win-rate needed to be profitable after fees and slippage.
+
 ## Project
 
 `new-token-predictor` — monitors pump.fun token launches in real time, collects trades for the first 20 minutes, enriches tokens with risk/social data, fetches price snapshots at scheduled delays, and captures macro market conditions for outcome correlation and ML analysis.
