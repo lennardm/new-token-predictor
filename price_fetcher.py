@@ -128,7 +128,13 @@ async def _fetch_solanatracker(
         (best.get("liquidity") or {}).get("usd")
         or best.get("liquidity")
     )
-    ath = _float(data.get("ath") or data.get("athPrice"))
+    ath_price = _float(data.get("ath") or data.get("athPrice"))
+
+    # ATH market cap: ath_price × total_supply. Fixed-supply pump.fun tokens allow
+    # us to derive it as ath_price × (market_cap / current_price).
+    ath_market_cap = None
+    if ath_price and price_usd and market_cap and price_usd > 0:
+        ath_market_cap = ath_price * (market_cap / price_usd)
 
     return {
         "price_usd": price_usd,
@@ -137,8 +143,8 @@ async def _fetch_solanatracker(
         "volume_24h": _float(
             (best.get("volume") or {}).get("h24") or best.get("volume24h")
         ),
-        "ath_price_usd": ath,
-        "ath_market_cap_usd": None,
+        "ath_price_usd": ath_price,
+        "ath_market_cap_usd": ath_market_cap,
         "pair_address": best.get("poolId") or best.get("pairAddress"),
         "source": "solanatracker",
     }
@@ -202,8 +208,13 @@ async def _fetch_and_store_snapshot(
     for mint in mints:
         if mint in ds_results:
             parsed = _parse_dexscreener_pair(ds_results[mint])
+            # Always supplement with SolanaTracker for real ATH data
+            st = await _fetch_solanatracker(session, mint)
+            if st:
+                parsed["ath_price_usd"] = st["ath_price_usd"]
+                parsed["ath_market_cap_usd"] = st["ath_market_cap_usd"]
         else:
-            # Fallback to SolanaTracker
+            # Full fallback to SolanaTracker (price + ATH)
             parsed = await _fetch_solanatracker(session, mint)
             await asyncio.sleep(_DS_MIN_INTERVAL)
 
@@ -221,21 +232,6 @@ async def _fetch_and_store_snapshot(
                 "source": "none",
             }
 
-        # Compute running ATH market cap from existing snapshots
-        prev_ath_mc = conn.execute(
-            """
-            SELECT MAX(COALESCE(ath_market_cap_usd, market_cap_usd))
-            FROM price_snapshots
-            WHERE token_mint = ?
-            """,
-            (mint,),
-        ).fetchone()[0]
-        current_mc = parsed.get("market_cap_usd")
-        if current_mc and (prev_ath_mc is None or current_mc > prev_ath_mc):
-            parsed["ath_market_cap_usd"] = current_mc
-        else:
-            parsed["ath_market_cap_usd"] = prev_ath_mc
-
         db.insert_snapshot(conn, {
             "token_mint": mint,
             "fetched_at": now,
@@ -243,11 +239,12 @@ async def _fetch_and_store_snapshot(
             **parsed,
         })
         log.info(
-            "Snap  %s  delay=%d  price=%s  mc=%s  source=%s",
+            "Snap  %s  delay=%d  price=%s  mc=%s  ath_mc=%s  source=%s",
             mint,
             delay_minutes,
             parsed["price_usd"],
             parsed["market_cap_usd"],
+            parsed["ath_market_cap_usd"],
             parsed["source"],
         )
 
