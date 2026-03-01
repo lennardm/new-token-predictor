@@ -73,15 +73,29 @@ async def _fetch_dexscreener(
 
 def _parse_dexscreener_pair(pair: dict) -> dict:
     liquidity = pair.get("liquidity") or {}
+    volume = pair.get("volume") or {}
+    price_change = pair.get("priceChange") or {}
+    txns = pair.get("txns") or {}
+    h1 = txns.get("h1") or {}
+    h24 = txns.get("h24") or {}
     return {
-        "price_usd": _float(pair.get("priceUsd")),
-        "market_cap_usd": _float(pair.get("marketCap") or pair.get("fdv")),
-        "liquidity_usd": _float(liquidity.get("usd")),
-        "volume_24h": _float((pair.get("volume") or {}).get("h24")),
-        "ath_price_usd": None,  # DexScreener doesn't expose ATH directly
-        "ath_market_cap_usd": None,
-        "pair_address": pair.get("pairAddress"),
-        "source": "dexscreener",
+        "price_usd":             _float(pair.get("priceUsd")),
+        "market_cap_usd":        _float(pair.get("marketCap") or pair.get("fdv")),
+        "liquidity_usd":         _float(liquidity.get("usd")),
+        "volume_1h":             _float(volume.get("h1")),
+        "volume_6h":             _float(volume.get("h6")),
+        "volume_24h":            _float(volume.get("h24")),
+        "price_change_1h_pct":   _float(price_change.get("h1")),
+        "price_change_6h_pct":   _float(price_change.get("h6")),
+        "price_change_24h_pct":  _float(price_change.get("h24")),
+        "buys_1h":               h1.get("buys"),
+        "sells_1h":              h1.get("sells"),
+        "buys_24h":              h24.get("buys"),
+        "sells_24h":             h24.get("sells"),
+        "ath_price_usd":         None,  # filled in from SolanaTracker
+        "ath_market_cap_usd":    None,
+        "pair_address":          pair.get("pairAddress"),
+        "source":                "dexscreener",
     }
 
 
@@ -137,16 +151,25 @@ async def _fetch_solanatracker(
         ath_market_cap = ath_price * (market_cap / price_usd)
 
     return {
-        "price_usd": price_usd,
-        "market_cap_usd": market_cap,
-        "liquidity_usd": liquidity,
-        "volume_24h": _float(
+        "price_usd":             price_usd,
+        "market_cap_usd":        market_cap,
+        "liquidity_usd":         liquidity,
+        "volume_1h":             None,
+        "volume_6h":             None,
+        "volume_24h":            _float(
             (best.get("volume") or {}).get("h24") or best.get("volume24h")
         ),
-        "ath_price_usd": ath_price,
-        "ath_market_cap_usd": ath_market_cap,
-        "pair_address": best.get("poolId") or best.get("pairAddress"),
-        "source": "solanatracker",
+        "price_change_1h_pct":   None,
+        "price_change_6h_pct":   None,
+        "price_change_24h_pct":  None,
+        "buys_1h":               None,
+        "sells_1h":              None,
+        "buys_24h":              None,
+        "sells_24h":             None,
+        "ath_price_usd":         ath_price,
+        "ath_market_cap_usd":    ath_market_cap,
+        "pair_address":          best.get("poolId") or best.get("pairAddress"),
+        "source":                "solanatracker",
     }
 
 
@@ -222,14 +245,23 @@ async def _fetch_and_store_snapshot(
             log.debug("No price data for %s at delay=%d", mint, delay_minutes)
             # Store null snapshot so we don't retry endlessly
             parsed = {
-                "price_usd": None,
-                "market_cap_usd": None,
-                "liquidity_usd": None,
-                "volume_24h": None,
-                "ath_price_usd": None,
-                "ath_market_cap_usd": None,
-                "pair_address": None,
-                "source": "none",
+                "price_usd":             None,
+                "market_cap_usd":        None,
+                "liquidity_usd":         None,
+                "volume_1h":             None,
+                "volume_6h":             None,
+                "volume_24h":            None,
+                "price_change_1h_pct":   None,
+                "price_change_6h_pct":   None,
+                "price_change_24h_pct":  None,
+                "buys_1h":               None,
+                "sells_1h":              None,
+                "buys_24h":              None,
+                "sells_24h":             None,
+                "ath_price_usd":         None,
+                "ath_market_cap_usd":    None,
+                "pair_address":          None,
+                "source":                "none",
             }
 
         db.insert_snapshot(conn, {

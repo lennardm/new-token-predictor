@@ -69,18 +69,27 @@ def _create_tables(conn: sqlite3.Connection) -> None:
         );
 
         CREATE TABLE IF NOT EXISTS price_snapshots (
-            id               INTEGER PRIMARY KEY AUTOINCREMENT,
-            token_mint       TEXT NOT NULL REFERENCES tokens(mint),
-            fetched_at       REAL,
-            delay_minutes    INTEGER,
-            price_usd        REAL,
-            market_cap_usd   REAL,
-            liquidity_usd    REAL,
-            volume_24h       REAL,
-            ath_price_usd    REAL,
-            ath_market_cap_usd REAL,
-            pair_address     TEXT,
-            source           TEXT,
+            id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+            token_mint          TEXT NOT NULL REFERENCES tokens(mint),
+            fetched_at          REAL,
+            delay_minutes       INTEGER,
+            price_usd           REAL,
+            market_cap_usd      REAL,
+            liquidity_usd       REAL,
+            volume_1h           REAL,
+            volume_6h           REAL,
+            volume_24h          REAL,
+            price_change_1h_pct REAL,
+            price_change_6h_pct REAL,
+            price_change_24h_pct REAL,
+            buys_1h             INTEGER,
+            sells_1h            INTEGER,
+            buys_24h            INTEGER,
+            sells_24h           INTEGER,
+            ath_price_usd       REAL,
+            ath_market_cap_usd  REAL,
+            pair_address        TEXT,
+            source              TEXT,
             UNIQUE(token_mint, delay_minutes)
         );
 
@@ -97,6 +106,27 @@ def _create_tables(conn: sqlite3.Connection) -> None:
         CREATE UNIQUE INDEX IF NOT EXISTS idx_market_snapshots_bucket
             ON market_snapshots(CAST(ts / 300 AS INTEGER));
     """)
+    conn.commit()
+    _migrate_price_snapshots(conn)
+
+
+def _migrate_price_snapshots(conn: sqlite3.Connection) -> None:
+    """Add columns introduced after initial schema without dropping existing data."""
+    existing = {row[1] for row in conn.execute("PRAGMA table_info(price_snapshots)")}
+    new_cols = [
+        ("volume_1h",            "REAL"),
+        ("volume_6h",            "REAL"),
+        ("price_change_1h_pct",  "REAL"),
+        ("price_change_6h_pct",  "REAL"),
+        ("price_change_24h_pct", "REAL"),
+        ("buys_1h",              "INTEGER"),
+        ("sells_1h",             "INTEGER"),
+        ("buys_24h",             "INTEGER"),
+        ("sells_24h",            "INTEGER"),
+    ]
+    for col, typ in new_cols:
+        if col not in existing:
+            conn.execute(f"ALTER TABLE price_snapshots ADD COLUMN {col} {typ}")
     conn.commit()
 
 
@@ -171,10 +201,16 @@ def insert_snapshot(conn: sqlite3.Connection, data: dict) -> None:
         """
         INSERT OR IGNORE INTO price_snapshots
             (token_mint, fetched_at, delay_minutes, price_usd, market_cap_usd,
-             liquidity_usd, volume_24h, ath_price_usd, ath_market_cap_usd, pair_address, source)
+             liquidity_usd, volume_1h, volume_6h, volume_24h,
+             price_change_1h_pct, price_change_6h_pct, price_change_24h_pct,
+             buys_1h, sells_1h, buys_24h, sells_24h,
+             ath_price_usd, ath_market_cap_usd, pair_address, source)
         VALUES
             (:token_mint, :fetched_at, :delay_minutes, :price_usd, :market_cap_usd,
-             :liquidity_usd, :volume_24h, :ath_price_usd, :ath_market_cap_usd, :pair_address, :source)
+             :liquidity_usd, :volume_1h, :volume_6h, :volume_24h,
+             :price_change_1h_pct, :price_change_6h_pct, :price_change_24h_pct,
+             :buys_1h, :sells_1h, :buys_24h, :sells_24h,
+             :ath_price_usd, :ath_market_cap_usd, :pair_address, :source)
         """,
         data,
     )
