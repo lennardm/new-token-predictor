@@ -1,9 +1,11 @@
+import os
 import sqlite3
 import time
 from config import DB_PATH, ENRICHMENT_DELAY_SEC, SNAPSHOT_DELAYS_MIN
 
 
 def init_db(path: str = DB_PATH) -> sqlite3.Connection:
+    os.makedirs(os.path.dirname(path), exist_ok=True)
     conn = sqlite3.connect(path, check_same_thread=False)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA journal_mode=WAL")
