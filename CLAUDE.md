@@ -26,7 +26,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **trades** — individual trade events; `UNIQUE(signature)` with `INSERT OR IGNORE`
 - **token_risk** — RugCheck/GoPlus enrichment; UPSERT on `token_mint`
 - **social_mentions** — CryptoPanic mention counts at collection time + 24h
-- **price_snapshots** — DexScreener/SolanaTracker snapshots at 1h/2h/4h/8h/24h; `UNIQUE(token_mint, delay_minutes)`
+- **price_snapshots** — DexScreener/SolanaTracker snapshots at 1h/2h/4h/8h/24h; `UNIQUE(token_mint, delay_minutes)`; columns: price, market cap, liquidity, volume (1h/6h/24h), price change % (1h/6h/24h), buy/sell counts (1h/24h), ATH price + market cap
 - **market_snapshots** — CoinGecko SOL + BTC price/change/volume polled every 5 min; `UNIQUE(CAST(ts/300 AS INTEGER))` deduplicates within each 5-minute window
 
 ## Key Design Decisions
@@ -40,13 +40,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Viability filter: < 10 buys OR < 5 unique buyers in first 60s → status `dead`, unsubscribed
 - All background services (`enricher`, `price_fetcher`) launched as tasks in `main()`, awaited on shutdown
 - `price_fetcher.run()` polls CoinGecko at the top of every 5-minute cycle for macro data before processing token snapshots
-- DexScreener batch endpoint: `/tokens/v1/solana/{mint1,mint2,...}` (up to 30 per call)
 - GoPlus used as fallback if RugCheck fails
-- ATH data: DexScreener is primary for price/mc/liquidity/volume (batched); SolanaTracker is always called afterward for `ath_price_usd` (from `data["ath"]`); `ath_market_cap_usd` is derived as `ath_price × (market_cap / current_price)` — valid for fixed-supply pump.fun tokens
+- DexScreener batch endpoint: `/tokens/v1/solana/{mint1,mint2,...}` (up to 30 per call); parsed fields: price, market cap, liquidity, volume (h1/h6/h24), priceChange (h1/h6/h24), txns buys+sells (h1/h24)
+- ATH data: SolanaTracker is always called after DexScreener for `ath_price_usd` (from `data["ath"]`); `ath_market_cap_usd` derived as `ath_price × (market_cap / current_price)` — valid for fixed-supply pump.fun tokens
 - Startup recovery: on every connect/reconnect, `_recover_active_tokens()` re-subscribes `watching`/`tracking` tokens and reschedules their viability/collection tasks based on elapsed time; tokens past their windows are resolved immediately from stored trade data
 - `_viability_check` accepts optional `sleep_sec` so recovery can wait out only the remaining viability window rather than a full 60s
 - `pumpfun_launch_rate_1h` is not stored — computed at analysis time from raw token timestamps to avoid redundancy
 - `market_snapshots` dedup uses `CREATE UNIQUE INDEX ON market_snapshots(CAST(ts / 300 AS INTEGER))` — SQLite does not support expressions in inline `UNIQUE` constraints
+- Schema migrations handled by `_migrate_price_snapshots()` in `db.py` — uses `PRAGMA table_info` to detect and `ALTER TABLE ADD COLUMN` for any missing columns; safe to run against existing DBs
 
 ## Macro Features (market_snapshots → analyzer.py)
 
