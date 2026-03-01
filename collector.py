@@ -30,7 +30,7 @@ from config import (
 )
 
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
 )
 log = logging.getLogger("collector")
@@ -156,23 +156,14 @@ async def _listen(conn: db.sqlite3.Connection) -> None:
                     except json.JSONDecodeError:
                         continue
 
-                    log.debug("RAW keys=%s  txType=%s  method=%s  mint=%s  hasBCK=%s",
-                        list(event.keys()),
-                        event.get("txType"),
-                        event.get("method"),
-                        event.get("mint"),
-                        "bondingCurveKey" in event,
-                    )
-
                     method = event.get("txType") or event.get("method") or ""
                     mint = event.get("mint")
 
                     if not mint:
                         continue
 
-                    # New token creation event — has bondingCurveKey but no txType
-                    # (trade events also carry bondingCurveKey, so txType absence is required)
-                    if not event.get("txType") and ("bondingCurveKey" in event or method == "create"):
+                    # New token creation event — txType is "create" (API now always sends it)
+                    if event.get("txType") == "create":
                         token_data = _extract_token(event)
                         db.insert_token(conn, token_data)
                         log.info(

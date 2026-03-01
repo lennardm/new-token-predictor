@@ -33,7 +33,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - Single persistent WebSocket to `pumpportal.fun` with exponential backoff on disconnect
 - Graceful shutdown via `asyncio.Event`: SIGINT/SIGTERM sets the event, `main()` cancels subtasks and awaits them — no `CancelledError` traceback
-- New token detection: `not event.get("txType") and "bondingCurveKey" in event` — trade events also carry `bondingCurveKey`, so `txType` absence is required to distinguish creation events
+- New token detection: `event.get("txType") == "create"` — the API now always sets `txType=create` on creation events; trade events use `buy`/`sell`
 - `_unsubscribe_token` swallows `ConnectionClosed` — background viability/collection tasks survive WebSocket reconnects without crashing
 - `_active_subscriptions` cleared on each reconnect so the new connection starts with a clean slate
 - `data/` directory created automatically by `db.init_db()` via `os.makedirs(..., exist_ok=True)`
