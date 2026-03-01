@@ -85,8 +85,11 @@ async def _subscribe_token(ws, mint: str) -> None:
 
 async def _unsubscribe_token(ws, mint: str) -> None:
     _active_subscriptions.discard(mint)
-    await ws.send(json.dumps({"method": "unsubscribeTokenTrade", "keys": [mint]}))
-    log.debug("Unsubscribed from trades for %s", mint)
+    try:
+        await ws.send(json.dumps({"method": "unsubscribeTokenTrade", "keys": [mint]}))
+        log.debug("Unsubscribed from trades for %s", mint)
+    except websockets.ConnectionClosed:
+        log.debug("Skipping unsubscribe for %s — connection already closed", mint)
 
 
 async def _viability_check(
@@ -143,6 +146,7 @@ async def _listen(conn: db.sqlite3.Connection) -> None:
                 max_size=2**20,
             ) as ws:
                 reconnect_delay = 2
+                _active_subscriptions.clear()
                 await ws.send(json.dumps({"method": "subscribeNewToken"}))
                 log.info("Subscribed to new-token events")
 

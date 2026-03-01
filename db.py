@@ -89,9 +89,11 @@ def _create_tables(conn: sqlite3.Connection) -> None:
             sol_change_24h_pct  REAL,
             sol_volume_24h_usd  REAL,
             btc_price_usd       REAL,
-            btc_change_24h_pct  REAL,
-            UNIQUE(CAST(ts / 300 AS INTEGER))
+            btc_change_24h_pct  REAL
         );
+
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_market_snapshots_bucket
+            ON market_snapshots(CAST(ts / 300 AS INTEGER));
     """)
     conn.commit()
 
