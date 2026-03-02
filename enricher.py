@@ -24,8 +24,23 @@ from config import (
 
 log = logging.getLogger("enricher")
 
+
 POLL_INTERVAL_SEC = 30
 REQUEST_TIMEOUT = aiohttp.ClientTimeout(total=15)
+
+
+def _float(val) -> float | None:
+    try:
+        return float(val)
+    except (TypeError, ValueError):
+        return None
+
+
+def _int(val) -> int | None:
+    try:
+        return int(val)
+    except (TypeError, ValueError):
+        return None
 
 
 async def _fetch_rugcheck(session: aiohttp.ClientSession, mint: str) -> dict | None:
@@ -148,6 +163,78 @@ async def _fetch_cryptopanic(
     return len(titles), titles
 
 
+def _parse_st_risk(token_data: dict) -> dict:
+    """Parse a single token entry from POST /tokens/multi response into ST risk fields."""
+    risk     = token_data.get("risk") or {}
+    snipers  = risk.get("snipers") or {}
+    bundlers = risk.get("bundlers") or {}
+    insiders = risk.get("insiders") or {}
+    dev      = risk.get("dev") or {}
+    pools    = token_data.get("pools") or []
+
+    curve_pct: float | None = None
+    for pool in pools:
+        if isinstance(pool, dict) and pool.get("curvePercentage") is not None:
+            curve_pct = _float(pool["curvePercentage"])
+            break
+
+    return {
+        "st_score":                    _int(risk.get("score")),
+        "st_rugged":                   1 if risk.get("rugged") else 0,
+        "st_jupiter_verified":         1 if risk.get("jupiterVerified") else 0,
+        "st_top10_pct":                _float(risk.get("top10")),
+        "st_snipers_count":            _int(snipers.get("count")),
+        "st_snipers_pct":              _float(snipers.get("totalPercentage")),
+        "st_snipers_balance":          _float(snipers.get("totalBalance")),
+        "st_bundlers_count":           _int(bundlers.get("count")),
+        "st_bundlers_pct":             _float(bundlers.get("totalPercentage")),
+        "st_bundlers_balance":         _float(bundlers.get("totalBalance")),
+        "st_bundlers_initial_pct":     _float(bundlers.get("totalInitialPercentage")),
+        "st_bundlers_initial_balance": _float(bundlers.get("totalInitialBalance")),
+        "st_insiders_count":           _int(insiders.get("count")),
+        "st_insiders_pct":             _float(insiders.get("totalPercentage")),
+        "st_insiders_balance":         _float(insiders.get("totalBalance")),
+        "st_dev_pct":                  _float(dev.get("percentage")),
+        "st_dev_amount":               _float(dev.get("amount")),
+        "st_curve_pct":                curve_pct,
+        "st_holders":                  _int(token_data.get("holders")),
+    }
+
+
+async def _fetch_solanatracker_multi(
+    session: aiohttp.ClientSession, mints: list[str]
+) -> dict[str, dict]:
+    """
+    POST /tokens/multi — fetch up to 20 tokens in one request.
+    Returns a dict keyed by mint address with parsed ST risk fields.
+    """
+    if not SOLANATRACKER_KEY or not mints:
+        return {}
+    url = f"{SOLANATRACKER_BASE}/tokens/multi"
+    headers = {"x-api-key": SOLANATRACKER_KEY, "Content-Type": "application/json"}
+    try:
+        async with session.post(
+            url,
+            json={"tokens": mints[:20]},
+            headers=headers,
+            timeout=aiohttp.ClientTimeout(total=15),
+        ) as resp:
+            if resp.status != 200:
+                log.debug("ST multi %d for %d mints", resp.status, len(mints))
+                return {}
+            data = await resp.json(content_type=None)
+    except Exception as exc:
+        log.debug("ST multi request failed: %s", exc)
+        return {}
+
+    tokens_map = data.get("tokens") or {}
+    results: dict[str, dict] = {}
+    for mint, token_data in tokens_map.items():
+        if isinstance(token_data, dict):
+            results[mint] = _parse_st_risk(token_data)
+    return results
+
+
 async def _enrich_token(
     session: aiohttp.ClientSession,
     conn: sqlite3.Connection,
@@ -220,6 +307,27 @@ async def run(conn: sqlite3.Connection) -> None:
                     for row in pending:
                         await _enrich_token(session, conn, row["mint"], row["symbol"] or "")
                         await asyncio.sleep(0.5)  # gentle rate limiting
+
+                    # Batch ST risk fetch for all newly enriched tokens (up to 20 per call)
+                    if SOLANATRACKER_KEY:
+                        mints = [row["mint"] for row in pending]
+                        for i in range(0, len(mints), 20):
+                            batch = mints[i: i + 20]
+                            st_results = await _fetch_solanatracker_multi(session, batch)
+                            now = time.time()
+                            for mint, risk in st_results.items():
+                                db.upsert_token_risk_st(conn, {
+                                    "token_mint": mint,
+                                    "fetched_at": now,
+                                    **risk,
+                                })
+                            log.info(
+                                "ST multi batch %d/%d — got data for %d/%d mints",
+                                i // 20 + 1, (len(mints) - 1) // 20 + 1,
+                                len(st_results), len(batch),
+                            )
+                            if i + 20 < len(mints):
+                                await asyncio.sleep(1.0)  # stay within rate limits
             except Exception:
                 log.exception("Enricher iteration error")
             await asyncio.sleep(POLL_INTERVAL_SEC)

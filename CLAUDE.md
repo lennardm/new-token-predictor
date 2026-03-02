@@ -38,7 +38,7 @@ The key question for step 2: at what prediction confidence does the signal becom
 
 - **tokens** — one row per pump.fun token; tracks lifecycle status (`watching` → `tracking` → `done` / `dead`)
 - **trades** — individual trade events; `UNIQUE(signature)` with `INSERT OR IGNORE`
-- **token_risk** — RugCheck/GoPlus enrichment; UPSERT on `token_mint`
+- **token_risk** — RugCheck/GoPlus enrichment + SolanaTracker risk data; UPSERT on `token_mint`; ST columns: score, rugged, jupiter_verified, top10_pct, snipers (count/pct/balance), bundlers (count/pct/balance/initial_pct/initial_balance), insiders (count/pct/balance), dev (pct/amount), curve_pct, holders
 - **social_mentions** — CryptoPanic mention counts at collection time + 24h
 - **price_snapshots** — DexScreener/SolanaTracker snapshots at 1h/2h/4h/8h/24h; `UNIQUE(token_mint, delay_minutes)`; columns: price, market cap, liquidity, volume (1h/6h/24h), price change % (1h/6h/24h), buy/sell counts (1h/24h), ATH price + market cap
 - **market_snapshots** — CoinGecko SOL + BTC price/change/volume polled every 5 min; `UNIQUE(CAST(ts/300 AS INTEGER))` deduplicates within each 5-minute window
@@ -56,12 +56,16 @@ The key question for step 2: at what prediction confidence does the signal becom
 - `price_fetcher.run()` polls CoinGecko at the top of every 5-minute cycle for macro data before processing token snapshots
 - GoPlus used as fallback if RugCheck fails
 - DexScreener batch endpoint: `/tokens/v1/solana/{mint1,mint2,...}` (up to 30 per call); parsed fields: price, market cap, liquidity, volume (h1/h6/h24), priceChange (h1/h6/h24), txns buys+sells (h1/h24)
-- ATH data: SolanaTracker is always called after DexScreener for `ath_price_usd` (from `data["ath"]`); `ath_market_cap_usd` derived as `ath_price × (market_cap / current_price)` — valid for fixed-supply pump.fun tokens
+- ATH data: SolanaTracker `/tokens/{mint}/ath` called after DexScreener for bonded tokens only; returns `{highest_price, highest_market_cap, timestamp}` (timestamp in ms, converted to s)
+- ST risk strategy: two separate paths — (1) `enricher.py` calls POST `/tokens/multi` (up to 20 mints per request) for ALL tokens passing the 60s viability filter, capturing full risk data ~45s after creation; (2) `price_fetcher.py` calls GET `/tokens/{mint}` for bonded tokens at snapshot time if ST data not yet stored
+- `/tokens/multi` response structure: `{"tokens": {"{mint}": {risk, pools, events, buys, sells, holders, ...}}}`; parsed by `_parse_st_risk()` in `enricher.py`; `_fetch_solanatracker_risk()` in `price_fetcher.py` uses the same full field set
+- `st_curve_pct` extracted from `pools[].curvePercentage` — present only on pump.fun bonding curve pools, None after bonding; useful as a live signal of how close a token is to graduating
+- `upsert_token_risk_st()` updates only ST columns; `upsert_token_risk()` updates only RugCheck/GoPlus columns — both use `ON CONFLICT DO UPDATE` so they are safe to call in any order
 - Startup recovery: on every connect/reconnect, `_recover_active_tokens()` re-subscribes `watching`/`tracking` tokens and reschedules their viability/collection tasks based on elapsed time; tokens past their windows are resolved immediately from stored trade data
 - `_viability_check` accepts optional `sleep_sec` so recovery can wait out only the remaining viability window rather than a full 60s
 - `pumpfun_launch_rate_1h` is not stored — computed at analysis time from raw token timestamps to avoid redundancy
 - `market_snapshots` dedup uses `CREATE UNIQUE INDEX ON market_snapshots(CAST(ts / 300 AS INTEGER))` — SQLite does not support expressions in inline `UNIQUE` constraints
-- Schema migrations handled by `_migrate_price_snapshots()` in `db.py` — uses `PRAGMA table_info` to detect and `ALTER TABLE ADD COLUMN` for any missing columns; safe to run against existing DBs
+- Schema migrations handled by `_migrate()` in `db.py` — uses `PRAGMA table_info` to detect and `ALTER TABLE ADD COLUMN` for any missing columns; safe to run against existing DBs
 
 ## Macro Features (market_snapshots → analyzer.py)
 
@@ -84,7 +88,7 @@ The key question for step 2: at what prediction confidence does the signal becom
 | DexScreener (55 RPM cap) | Batched, rate-limited via `_DS_MIN_INTERVAL` |
 | RugCheck / GoPlus | On-demand per token, 45s after creation |
 | CryptoPanic (100 req/month free) | Sampled — only tokens with buy volume ≥ `CRYPTOPANIC_MIN_BUY_SOL` (default 5 SOL) |
-| SolanaTracker | ATH data at every snapshot + full fallback when DexScreener has no data |
+| SolanaTracker | POST `/tokens/multi` (≤20 mints) in enricher for all tracking tokens; GET `/tokens/{mint}/ath` for bonded token ATH; GET `/tokens/{mint}` as full price fallback |
 
 ### CryptoPanic sampling
 

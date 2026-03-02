@@ -154,19 +154,40 @@ async def _fetch_solanatracker_risk(
         log.debug("ST risk request failed for %s: %s", mint, exc)
         return None
 
-    risk = data.get("risk") or {}
+    risk     = data.get("risk") or {}
     snipers  = risk.get("snipers") or {}
     bundlers = risk.get("bundlers") or {}
+    insiders = risk.get("insiders") or {}
+    dev      = risk.get("dev") or {}
+    pools    = data.get("pools") or []
+
+    # curvePercentage from the pumpfun pool (if present)
+    curve_pct: float | None = None
+    for pool in pools:
+        if isinstance(pool, dict) and pool.get("curvePercentage") is not None:
+            curve_pct = _float(pool["curvePercentage"])
+            break
 
     return {
-        "st_score":                _int(risk.get("score")),
-        "st_rugged":               1 if risk.get("rugged") else 0,
-        "st_top10_pct":            _float(risk.get("top10")),
-        "st_snipers_count":        _int(snipers.get("count")),
-        "st_snipers_pct":          _float(snipers.get("totalPercentage")),
-        "st_bundlers_count":       _int(bundlers.get("count")),
-        "st_bundlers_initial_pct": _float(bundlers.get("totalInitialPercentage")),
-        "st_holders":              _int(data.get("holders")),
+        "st_score":                    _int(risk.get("score")),
+        "st_rugged":                   1 if risk.get("rugged") else 0,
+        "st_jupiter_verified":         1 if risk.get("jupiterVerified") else 0,
+        "st_top10_pct":                _float(risk.get("top10")),
+        "st_snipers_count":            _int(snipers.get("count")),
+        "st_snipers_pct":              _float(snipers.get("totalPercentage")),
+        "st_snipers_balance":          _float(snipers.get("totalBalance")),
+        "st_bundlers_count":           _int(bundlers.get("count")),
+        "st_bundlers_pct":             _float(bundlers.get("totalPercentage")),
+        "st_bundlers_balance":         _float(bundlers.get("totalBalance")),
+        "st_bundlers_initial_pct":     _float(bundlers.get("totalInitialPercentage")),
+        "st_bundlers_initial_balance": _float(bundlers.get("totalInitialBalance")),
+        "st_insiders_count":           _int(insiders.get("count")),
+        "st_insiders_pct":             _float(insiders.get("totalPercentage")),
+        "st_insiders_balance":         _float(insiders.get("totalBalance")),
+        "st_dev_pct":                  _float(dev.get("percentage")),
+        "st_dev_amount":               _float(dev.get("amount")),
+        "st_curve_pct":                curve_pct,
+        "st_holders":                  _int(data.get("holders")),
     }
 
 
