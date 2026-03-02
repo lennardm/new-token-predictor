@@ -29,7 +29,8 @@ def _create_tables(conn: sqlite3.Connection) -> None:
             website_url         TEXT,
             description         TEXT,
             status              TEXT DEFAULT 'watching',
-            bonded_at           REAL
+            bonded_at           REAL,
+            migrated_at         REAL
         );
 
         CREATE TABLE IF NOT EXISTS trades (
@@ -154,6 +155,8 @@ def _migrate(conn: sqlite3.Connection) -> None:
     t_cols = {row[1] for row in conn.execute("PRAGMA table_info(tokens)")}
     if "bonded_at" not in t_cols:
         conn.execute("ALTER TABLE tokens ADD COLUMN bonded_at REAL")
+    if "migrated_at" not in t_cols:
+        conn.execute("ALTER TABLE tokens ADD COLUMN migrated_at REAL")
 
     # token_risk
     tr_cols = {row[1] for row in conn.execute("PRAGMA table_info(token_risk)")}
@@ -292,6 +295,14 @@ def set_token_bonded(conn: sqlite3.Connection, mint: str, bonded_at: float) -> N
     conn.execute(
         "UPDATE tokens SET bonded_at = ? WHERE mint = ? AND bonded_at IS NULL",
         (bonded_at, mint),
+    )
+    conn.commit()
+
+
+def set_token_migrated(conn: sqlite3.Connection, mint: str, migrated_at: float) -> None:
+    conn.execute(
+        "UPDATE tokens SET migrated_at = ? WHERE mint = ? AND migrated_at IS NULL",
+        (migrated_at, mint),
     )
     conn.commit()
 

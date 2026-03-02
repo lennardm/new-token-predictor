@@ -36,7 +36,7 @@ The key question for step 2: at what prediction confidence does the signal becom
 
 ## Database Schema
 
-- **tokens** — one row per pump.fun token; tracks lifecycle status (`watching` → `tracking` → `done` / `dead`)
+- **tokens** — one row per pump.fun token; tracks lifecycle status (`watching` → `tracking` → `done` / `dead`); `bonded_at` = DexScreener-detected graduation time (up to 5 min late); `migrated_at` = real-time PumpPortal migration event timestamp (accurate to the second)
 - **trades** — individual trade events; `UNIQUE(signature)` with `INSERT OR IGNORE`
 - **token_risk** — RugCheck/GoPlus enrichment + SolanaTracker risk data; UPSERT on `token_mint`; ST columns: score, rugged, jupiter_verified, top10_pct, snipers (count/pct/balance), bundlers (count/pct/balance/initial_pct/initial_balance), insiders (count/pct/balance), dev (pct/amount), curve_pct, holders
 - **social_mentions** — CryptoPanic mention counts at collection time + 24h
@@ -48,6 +48,7 @@ The key question for step 2: at what prediction confidence does the signal becom
 - Single persistent WebSocket to `pumpportal.fun` with exponential backoff on disconnect
 - Graceful shutdown via `asyncio.Event`: SIGINT/SIGTERM sets the event, `main()` cancels subtasks and awaits them — no `CancelledError` traceback
 - New token detection: `event.get("txType") == "create"` — the API now always sets `txType=create` on creation events; trade events use `buy`/`sell`
+- Migration tracking: `subscribeNewMigration` subscribed on every connect; `txType=migrate` events set `migrated_at` and unsubscribe from token trades if still active (PumpSwap trades are not on the pumpportal stream); price snapshot collection continues unaffected; `time_to_migration = migrated_at - created_at` computed at analysis time
 - `_unsubscribe_token` swallows `ConnectionClosed` — background viability/collection tasks survive WebSocket reconnects without crashing
 - `_active_subscriptions` cleared on each reconnect so the new connection starts with a clean slate
 - `data/` directory created automatically by `db.init_db()` via `os.makedirs(..., exist_ok=True)`

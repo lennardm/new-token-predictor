@@ -203,7 +203,8 @@ async def _listen(conn: db.sqlite3.Connection) -> None:
                 reconnect_delay = 2
                 _active_subscriptions.clear()
                 await ws.send(json.dumps({"method": "subscribeNewToken"}))
-                log.info("Subscribed to new-token events")
+                await ws.send(json.dumps({"method": "subscribeNewMigration"}))
+                log.info("Subscribed to new-token and migration events")
                 await _recover_active_tokens(conn, ws)
 
                 async for raw in ws:
@@ -216,6 +217,23 @@ async def _listen(conn: db.sqlite3.Connection) -> None:
                     mint = event.get("mint")
 
                     if not mint:
+                        continue
+
+                    # Migration event — token graduated from bonding curve
+                    if event.get("txType") == "migrate":
+                        migrated_at = event.get("timestamp") or time.time()
+                        db.set_token_migrated(conn, mint, migrated_at)
+                        if mint in _active_subscriptions:
+                            await _unsubscribe_token(ws, mint)
+                            elapsed = migrated_at - (conn.execute(
+                                "SELECT created_at FROM tokens WHERE mint = ?", (mint,)
+                            ).fetchone() or {}).get("created_at", migrated_at)
+                            log.info(
+                                "MIGRATED  %s  (%.0fs after creation)",
+                                mint, elapsed,
+                            )
+                        else:
+                            log.info("MIGRATED  %s  (not actively tracked)", mint)
                         continue
 
                     # New token creation event — txType is "create" (API now always sends it)
