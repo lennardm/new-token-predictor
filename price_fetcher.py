@@ -33,6 +33,9 @@ REQUEST_TIMEOUT = aiohttp.ClientTimeout(total=15)
 # Minimum gap between DexScreener requests to stay under RPM cap
 _DS_MIN_INTERVAL = 60 / DEXSCREENER_RPM  # ~1.09 s
 
+# dexId values that indicate a token has bonded (graduated from pump.fun bonding curve)
+_BONDED_DEX_IDS = {"raydium", "orca", "meteora", "pumpswap"}
+
 
 async def _fetch_dexscreener(
     session: aiohttp.ClientSession, mints: list[str]
@@ -92,16 +95,88 @@ def _parse_dexscreener_pair(pair: dict) -> dict:
         "sells_1h":              h1.get("sells"),
         "buys_24h":              h24.get("buys"),
         "sells_24h":             h24.get("sells"),
-        "ath_price_usd":         None,  # filled in from SolanaTracker
+        "ath_price_usd":         None,
         "ath_market_cap_usd":    None,
+        "ath_timestamp":         None,
         "pair_address":          pair.get("pairAddress"),
         "source":                "dexscreener",
     }
 
 
-async def _fetch_solanatracker(
+async def _fetch_solanatracker_ath(
     session: aiohttp.ClientSession, mint: str
 ) -> dict | None:
+    """Call /tokens/{mint}/ath — only meaningful for bonded tokens."""
+    if not SOLANATRACKER_KEY:
+        return None
+    url = f"{SOLANATRACKER_BASE}/tokens/{mint}/ath"
+    headers = {"x-api-key": SOLANATRACKER_KEY}
+    try:
+        async with session.get(url, headers=headers, timeout=REQUEST_TIMEOUT) as resp:
+            if resp.status != 200:
+                log.debug("ST ATH %d for %s", resp.status, mint)
+                return None
+            data = await resp.json(content_type=None)
+    except Exception as exc:
+        log.debug("ST ATH request failed for %s: %s", mint, exc)
+        return None
+
+    ath_price = _float(data.get("highest_price"))
+    ath_mc    = _float(data.get("highest_market_cap"))
+    ath_ts_ms = data.get("timestamp")
+    ath_ts    = ath_ts_ms / 1000 if ath_ts_ms else None  # convert ms → s
+
+    return {
+        "ath_price_usd":     ath_price,
+        "ath_market_cap_usd": ath_mc,
+        "ath_timestamp":     ath_ts,
+    }
+
+
+async def _fetch_solanatracker_risk(
+    session: aiohttp.ClientSession, mint: str
+) -> dict | None:
+    """
+    Call /tokens/{mint} to get risk / holder data for bonded tokens.
+    Returns a flat dict ready for upsert_token_risk_st, or None on failure.
+    """
+    if not SOLANATRACKER_KEY:
+        return None
+    url = f"{SOLANATRACKER_BASE}/tokens/{mint}"
+    headers = {"x-api-key": SOLANATRACKER_KEY}
+    try:
+        async with session.get(url, headers=headers, timeout=REQUEST_TIMEOUT) as resp:
+            if resp.status != 200:
+                log.debug("ST risk %d for %s", resp.status, mint)
+                return None
+            data = await resp.json(content_type=None)
+    except Exception as exc:
+        log.debug("ST risk request failed for %s: %s", mint, exc)
+        return None
+
+    risk = data.get("risk") or {}
+    snipers  = risk.get("snipers") or {}
+    bundlers = risk.get("bundlers") or {}
+
+    return {
+        "st_score":                _int(risk.get("score")),
+        "st_rugged":               1 if risk.get("rugged") else 0,
+        "st_top10_pct":            _float(risk.get("top10")),
+        "st_snipers_count":        _int(snipers.get("count")),
+        "st_snipers_pct":          _float(snipers.get("totalPercentage")),
+        "st_bundlers_count":       _int(bundlers.get("count")),
+        "st_bundlers_initial_pct": _float(bundlers.get("totalInitialPercentage")),
+        "st_holders":              _int(data.get("holders")),
+    }
+
+
+async def _fetch_solanatracker_full(
+    session: aiohttp.ClientSession, mint: str
+) -> dict | None:
+    """
+    Full fallback: /tokens/{mint} for price + volume when DexScreener has no data.
+    Fixes: marketCap is a nested {quote, usd} dict, not a scalar.
+    """
     if not SOLANATRACKER_KEY:
         return None
     url = f"{SOLANATRACKER_BASE}/tokens/{mint}"
@@ -115,7 +190,6 @@ async def _fetch_solanatracker(
         log.debug("SolanaTracker request failed for %s: %s", mint, exc)
         return None
 
-    # SolanaTracker response shape (best-effort parsing)
     pools = data.get("pools", [])
     best: dict = {}
     for pool in pools:
@@ -125,30 +199,13 @@ async def _fetch_solanatracker(
         best_liq = (best.get("liquidity") or {}).get("usd", 0) or 0
         if liq > best_liq:
             best = pool
-
     if not best:
-        # Try flat structure
         best = data
 
-    price_usd = _float(
-        (best.get("price") or {}).get("usd")
-        or best.get("priceUsd")
-    )
-    market_cap = _float(
-        best.get("marketCap")
-        or (best.get("market_cap"))
-    )
-    liquidity = _float(
-        (best.get("liquidity") or {}).get("usd")
-        or best.get("liquidity")
-    )
-    ath_price = _float(data.get("ath") or data.get("athPrice"))
-
-    # ATH market cap: ath_price × total_supply. Fixed-supply pump.fun tokens allow
-    # us to derive it as ath_price × (market_cap / current_price).
-    ath_market_cap = None
-    if ath_price and price_usd and market_cap and price_usd > 0:
-        ath_market_cap = ath_price * (market_cap / price_usd)
+    price_usd  = _float((best.get("price") or {}).get("usd") or best.get("priceUsd"))
+    market_cap = _float((best.get("marketCap") or {}).get("usd") or best.get("market_cap"))
+    liquidity  = _float((best.get("liquidity") or {}).get("usd"))
+    txns       = best.get("txns") or {}
 
     return {
         "price_usd":             price_usd,
@@ -156,9 +213,7 @@ async def _fetch_solanatracker(
         "liquidity_usd":         liquidity,
         "volume_1h":             None,
         "volume_6h":             None,
-        "volume_24h":            _float(
-            (best.get("volume") or {}).get("h24") or best.get("volume24h")
-        ),
+        "volume_24h":            _float(txns.get("volume24h") or txns.get("volume")),
         "price_change_1h_pct":   None,
         "price_change_6h_pct":   None,
         "price_change_24h_pct":  None,
@@ -166,8 +221,9 @@ async def _fetch_solanatracker(
         "sells_1h":              None,
         "buys_24h":              None,
         "sells_24h":             None,
-        "ath_price_usd":         ath_price,
-        "ath_market_cap_usd":    ath_market_cap,
+        "ath_price_usd":         None,
+        "ath_market_cap_usd":    None,
+        "ath_timestamp":         None,
         "pair_address":          best.get("poolId") or best.get("pairAddress"),
         "source":                "solanatracker",
     }
@@ -218,48 +274,69 @@ def _float(val) -> float | None:
         return None
 
 
+def _int(val) -> int | None:
+    try:
+        return int(val)
+    except (TypeError, ValueError):
+        return None
+
+
 async def _fetch_and_store_snapshot(
     session: aiohttp.ClientSession,
     conn: sqlite3.Connection,
     mints: list[str],
     delay_minutes: int,
 ) -> None:
-    # DexScreener batch (up to 30)
     ds_results = await _fetch_dexscreener(session, mints)
     now = time.time()
 
     for mint in mints:
-        # Check for ATH data already stored from an earlier snapshot
-        existing_ath = conn.execute(
-            """
-            SELECT ath_price_usd, ath_market_cap_usd
-            FROM price_snapshots
-            WHERE token_mint = ? AND ath_price_usd IS NOT NULL
-            ORDER BY delay_minutes DESC LIMIT 1
-            """,
-            (mint,),
-        ).fetchone()
-
         if mint in ds_results:
             parsed = _parse_dexscreener_pair(ds_results[mint])
-            if existing_ath:
-                # Reuse stored ATH — SolanaTracker always returns current ATH anyway
-                parsed["ath_price_usd"] = existing_ath["ath_price_usd"]
-                parsed["ath_market_cap_usd"] = existing_ath["ath_market_cap_usd"]
-            else:
-                # First snapshot for this token — call SolanaTracker
-                st = await _fetch_solanatracker(session, mint)
-                if st:
-                    parsed["ath_price_usd"] = st["ath_price_usd"]
-                    parsed["ath_market_cap_usd"] = st["ath_market_cap_usd"]
+
+            # Detect bonding from dexId
+            dex_id = ds_results[mint].get("dexId", "")
+            is_bonded = dex_id.lower() in _BONDED_DEX_IDS
+            if is_bonded:
+                token_row = conn.execute(
+                    "SELECT bonded_at FROM tokens WHERE mint = ?", (mint,)
+                ).fetchone()
+                if token_row and token_row["bonded_at"] is None:
+                    db.set_token_bonded(conn, mint, now)
+                    log.info("BONDED %s  (dex=%s)", mint, dex_id)
+
+            if is_bonded:
+                # Real ATH from dedicated endpoint
+                ath = await _fetch_solanatracker_ath(session, mint)
+                if ath:
+                    parsed.update(ath)
+
+                # Rich risk data — only if not yet stored
+                has_st = conn.execute(
+                    "SELECT st_score FROM token_risk WHERE token_mint = ? AND st_score IS NOT NULL",
+                    (mint,),
+                ).fetchone()
+                if not has_st:
+                    risk = await _fetch_solanatracker_risk(session, mint)
+                    if risk:
+                        db.upsert_token_risk_st(conn, {
+                            "token_mint": mint,
+                            "fetched_at": now,
+                            **risk,
+                        })
+                        log.info(
+                            "ST risk %s  score=%s  rugged=%s  bundlers=%s  snipers=%s  holders=%s",
+                            mint, risk["st_score"], risk["st_rugged"],
+                            risk["st_bundlers_count"], risk["st_snipers_count"],
+                            risk["st_holders"],
+                        )
         else:
-            # Full fallback to SolanaTracker (price + ATH)
-            parsed = await _fetch_solanatracker(session, mint)
+            # Full fallback to SolanaTracker for price data
+            parsed = await _fetch_solanatracker_full(session, mint)
             await asyncio.sleep(_DS_MIN_INTERVAL)
 
         if parsed is None:
             log.debug("No price data for %s at delay=%d", mint, delay_minutes)
-            # Store null snapshot so we don't retry endlessly
             parsed = {
                 "price_usd":             None,
                 "market_cap_usd":        None,
@@ -276,6 +353,7 @@ async def _fetch_and_store_snapshot(
                 "sells_24h":             None,
                 "ath_price_usd":         None,
                 "ath_market_cap_usd":    None,
+                "ath_timestamp":         None,
                 "pair_address":          None,
                 "source":                "none",
             }
@@ -287,12 +365,11 @@ async def _fetch_and_store_snapshot(
             **parsed,
         })
         log.info(
-            "Snap  %s  delay=%d  price=%s  mc=%s  ath_mc=%s  source=%s",
-            mint,
-            delay_minutes,
-            parsed["price_usd"],
+            "Snap  %s  delay=%d  mc=%s  ath_mc=%s  bonded=%s  source=%s",
+            mint, delay_minutes,
             parsed["market_cap_usd"],
             parsed["ath_market_cap_usd"],
+            "yes" if parsed.get("ath_timestamp") else "no",
             parsed["source"],
         )
 
@@ -345,9 +422,7 @@ async def run(conn: sqlite3.Connection) -> None:
                     if not rows:
                         continue
                     mints = [r["mint"] for r in rows]
-                    log.info(
-                        "Snapshot delay=%d  count=%d", delay, len(mints)
-                    )
+                    log.info("Snapshot delay=%d  count=%d", delay, len(mints))
                     await _fetch_and_store_snapshot(session, conn, mints, delay)
                     await asyncio.sleep(_DS_MIN_INTERVAL)
 

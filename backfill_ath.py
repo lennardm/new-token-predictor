@@ -1,7 +1,10 @@
 """
-backfill_ath.py — One-off script to fill in missing ath_price_usd /
-ath_market_cap_usd on price_snapshots rows collected before the
-SolanaTracker ATH fix.
+backfill_ath.py — Backfill ATH + bonding data for existing tokens.
+
+For each done/tracking token without ATH data:
+  1. Call DexScreener to check if the token has bonded (dexId != pumpfun).
+  2. If bonded: call ST /tokens/{mint}/ath, update price_snapshots, set bonded_at.
+  3. If bonded and no ST risk data: call ST /tokens/{mint} for risk fields.
 
 Safe to run alongside collector.py (WAL mode).
 Safe to interrupt and re-run — only NULL rows are touched.
@@ -9,7 +12,6 @@ Safe to interrupt and re-run — only NULL rows are touched.
 
 import asyncio
 import logging
-import sqlite3
 import time
 
 import aiohttp
@@ -18,7 +20,19 @@ from dotenv import load_dotenv
 load_dotenv()
 
 import db
-from config import DB_PATH, SOLANATRACKER_BASE, SOLANATRACKER_KEY
+from config import (
+    DB_PATH,
+    DEXSCREENER_BASE,
+    SOLANATRACKER_BASE,
+    SOLANATRACKER_KEY,
+)
+from price_fetcher import (
+    _BONDED_DEX_IDS,
+    _fetch_dexscreener,
+    _fetch_solanatracker_ath,
+    _fetch_solanatracker_risk,
+    _float,
+)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -26,61 +40,9 @@ logging.basicConfig(
 )
 log = logging.getLogger("backfill_ath")
 
-REQUEST_TIMEOUT = aiohttp.ClientTimeout(total=15)
-REQ_INTERVAL = 15.0   # seconds between calls — collector also hits SolanaTracker heavily
-RATE_LIMIT_BACKOFF = 300  # 5 min pause on 429 to let collector's snapshot cycle pass
-
-
-def _float(val) -> float | None:
-    try:
-        return float(val)
-    except (TypeError, ValueError):
-        return None
-
-
-async def fetch_ath(session: aiohttp.ClientSession, mint: str) -> tuple[float | None, float | None]:
-    """Returns (ath_price_usd, ath_market_cap_usd) or (None, None) on failure."""
-    if not SOLANATRACKER_KEY:
-        return None, None
-    url = f"{SOLANATRACKER_BASE}/tokens/{mint}"
-    headers = {"x-api-key": SOLANATRACKER_KEY}
-    while True:
-        try:
-            async with session.get(url, headers=headers, timeout=REQUEST_TIMEOUT) as resp:
-                if resp.status == 429:
-                    log.warning("Rate limited — backing off %ds", RATE_LIMIT_BACKOFF)
-                    await asyncio.sleep(RATE_LIMIT_BACKOFF)
-                    continue
-                if resp.status != 200:
-                    return None, None
-                data = await resp.json(content_type=None)
-                break
-        except Exception as exc:
-            log.debug("SolanaTracker failed for %s: %s", mint, exc)
-            return None, None
-
-    # Pick pool with highest liquidity
-    pools = data.get("pools", [])
-    best: dict = {}
-    for pool in pools:
-        if not isinstance(pool, dict):
-            continue
-        liq = (pool.get("liquidity") or {}).get("usd", 0) or 0
-        best_liq = (best.get("liquidity") or {}).get("usd", 0) or 0
-        if liq > best_liq:
-            best = pool
-    if not best:
-        best = data
-
-    price_usd  = _float((best.get("price") or {}).get("usd") or best.get("priceUsd"))
-    market_cap = _float(best.get("marketCap") or best.get("market_cap"))
-    ath_price  = _float(data.get("ath") or data.get("athPrice"))
-
-    ath_market_cap = None
-    if ath_price and price_usd and market_cap and price_usd > 0:
-        ath_market_cap = ath_price * (market_cap / price_usd)
-
-    return ath_price, ath_market_cap
+DS_BATCH = 30       # DexScreener batch size
+ST_INTERVAL = 2.0   # seconds between SolanaTracker calls
+DS_INTERVAL = 1.1   # seconds between DexScreener batches
 
 
 async def run() -> None:
@@ -90,51 +52,113 @@ async def run() -> None:
 
     conn = db.init_db(DB_PATH)
 
+    # Tokens missing ATH data across all their snapshots
     mints = [
         row[0] for row in conn.execute("""
-            SELECT DISTINCT token_mint
-            FROM price_snapshots
-            WHERE ath_market_cap_usd IS NULL AND source != 'none'
-            ORDER BY token_mint
+            SELECT DISTINCT t.mint
+            FROM tokens t
+            JOIN price_snapshots ps ON ps.token_mint = t.mint
+            WHERE ps.ath_market_cap_usd IS NULL
+              AND t.status IN ('done', 'tracking')
+            ORDER BY t.created_at
         """).fetchall()
     ]
 
     total = len(mints)
-    log.info("Tokens to backfill: %d", total)
+    log.info("Tokens to check: %d", total)
 
-    done = skipped = 0
+    bonded = skipped = ath_filled = risk_filled = 0
     t_start = time.time()
 
     async with aiohttp.ClientSession() as session:
-        for i, mint in enumerate(mints, 1):
-            ath_price, ath_mc = await fetch_ath(session, mint)
+        # Process in DexScreener batches to detect bonding cheaply
+        for batch_start in range(0, total, DS_BATCH):
+            batch = mints[batch_start: batch_start + DS_BATCH]
+            ds = await _fetch_dexscreener(session, batch)
 
-            if ath_price is not None or ath_mc is not None:
-                conn.execute(
-                    """
-                    UPDATE price_snapshots
-                    SET ath_price_usd = ?, ath_market_cap_usd = ?
-                    WHERE token_mint = ? AND ath_market_cap_usd IS NULL
-                    """,
-                    (ath_price, ath_mc, mint),
-                )
-                conn.commit()
-                done += 1
-            else:
-                skipped += 1
+            for mint in batch:
+                pair = ds.get(mint)
+                dex_id = (pair.get("dexId") or "").lower() if pair else ""
+                is_bonded = dex_id in _BONDED_DEX_IDS
 
-            if i % 50 == 0 or i == total:
-                elapsed = time.time() - t_start
-                rate = i / elapsed
-                eta = (total - i) / rate if rate > 0 else 0
-                log.info(
-                    "[%d/%d] filled=%d  skipped=%d  eta=%.0fs",
-                    i, total, done, skipped, eta,
-                )
+                if not is_bonded:
+                    skipped += 1
+                    continue
 
-            await asyncio.sleep(REQ_INTERVAL)
+                bonded += 1
+                now = time.time()
 
-    log.info("Done. filled=%d  skipped=%d  total=%d", done, skipped, total)
+                # Record bonded_at if not set
+                row = conn.execute(
+                    "SELECT bonded_at, created_at FROM tokens WHERE mint = ?", (mint,)
+                ).fetchone()
+                if row and row["bonded_at"] is None:
+                    # Approximate: use fetched_at of earliest snapshot
+                    earliest = conn.execute(
+                        "SELECT MIN(fetched_at) FROM price_snapshots WHERE token_mint = ?",
+                        (mint,),
+                    ).fetchone()
+                    bonded_at = earliest[0] if earliest and earliest[0] else now
+                    db.set_token_bonded(conn, mint, bonded_at)
+
+                # Fetch ATH
+                await asyncio.sleep(ST_INTERVAL)
+                ath = await _fetch_solanatracker_ath(session, mint)
+                if ath and ath.get("ath_market_cap_usd"):
+                    conn.execute(
+                        """
+                        UPDATE price_snapshots
+                        SET ath_price_usd = ?,
+                            ath_market_cap_usd = ?,
+                            ath_timestamp = ?
+                        WHERE token_mint = ? AND ath_market_cap_usd IS NULL
+                        """,
+                        (
+                            ath["ath_price_usd"],
+                            ath["ath_market_cap_usd"],
+                            ath["ath_timestamp"],
+                            mint,
+                        ),
+                    )
+                    conn.commit()
+                    ath_filled += 1
+                    log.info(
+                        "ATH  %s  ath_mc=$%.0f  bonded_at~%s",
+                        mint, ath["ath_market_cap_usd"] or 0,
+                        "yes",
+                    )
+
+                # Fetch ST risk data if missing
+                has_st = conn.execute(
+                    "SELECT st_score FROM token_risk WHERE token_mint = ? AND st_score IS NOT NULL",
+                    (mint,),
+                ).fetchone()
+                if not has_st:
+                    await asyncio.sleep(ST_INTERVAL)
+                    risk = await _fetch_solanatracker_risk(session, mint)
+                    if risk:
+                        db.upsert_token_risk_st(conn, {
+                            "token_mint": mint,
+                            "fetched_at": now,
+                            **risk,
+                        })
+                        risk_filled += 1
+
+            await asyncio.sleep(DS_INTERVAL)
+
+            done_so_far = batch_start + len(batch)
+            elapsed = time.time() - t_start
+            rate = done_so_far / elapsed
+            eta = (total - done_so_far) / rate if rate > 0 else 0
+            log.info(
+                "[%d/%d] bonded=%d  ath_filled=%d  risk_filled=%d  skipped=%d  eta=%.0fs",
+                done_so_far, total, bonded, ath_filled, risk_filled, skipped, eta,
+            )
+
+    log.info(
+        "Done. bonded=%d  ath_filled=%d  risk_filled=%d  skipped=%d",
+        bonded, ath_filled, risk_filled, skipped,
+    )
     conn.close()
 
 

@@ -28,7 +28,8 @@ def _create_tables(conn: sqlite3.Connection) -> None:
             telegram_url        TEXT,
             website_url         TEXT,
             description         TEXT,
-            status              TEXT DEFAULT 'watching'
+            status              TEXT DEFAULT 'watching',
+            bonded_at           REAL
         );
 
         CREATE TABLE IF NOT EXISTS trades (
@@ -46,16 +47,24 @@ def _create_tables(conn: sqlite3.Connection) -> None:
         CREATE INDEX IF NOT EXISTS idx_trades_mint_ts ON trades(token_mint, ts);
 
         CREATE TABLE IF NOT EXISTS token_risk (
-            token_mint              TEXT PRIMARY KEY REFERENCES tokens(mint),
-            fetched_at              REAL,
-            rugcheck_score          INTEGER,
-            rugcheck_level          TEXT,
-            risks                   TEXT,
-            mint_authority_revoked  INTEGER,
+            token_mint               TEXT PRIMARY KEY REFERENCES tokens(mint),
+            fetched_at               REAL,
+            rugcheck_score           INTEGER,
+            rugcheck_level           TEXT,
+            risks                    TEXT,
+            mint_authority_revoked   INTEGER,
             freeze_authority_revoked INTEGER,
-            top_holder_pct          REAL,
-            lp_locked               INTEGER,
-            source                  TEXT
+            top_holder_pct           REAL,
+            lp_locked                INTEGER,
+            source                   TEXT,
+            st_score                 INTEGER,
+            st_rugged                INTEGER,
+            st_top10_pct             REAL,
+            st_snipers_count         INTEGER,
+            st_snipers_pct           REAL,
+            st_bundlers_count        INTEGER,
+            st_bundlers_initial_pct  REAL,
+            st_holders               INTEGER
         );
 
         CREATE TABLE IF NOT EXISTS social_mentions (
@@ -69,27 +78,28 @@ def _create_tables(conn: sqlite3.Connection) -> None:
         );
 
         CREATE TABLE IF NOT EXISTS price_snapshots (
-            id                  INTEGER PRIMARY KEY AUTOINCREMENT,
-            token_mint          TEXT NOT NULL REFERENCES tokens(mint),
-            fetched_at          REAL,
-            delay_minutes       INTEGER,
-            price_usd           REAL,
-            market_cap_usd      REAL,
-            liquidity_usd       REAL,
-            volume_1h           REAL,
-            volume_6h           REAL,
-            volume_24h          REAL,
-            price_change_1h_pct REAL,
-            price_change_6h_pct REAL,
+            id                   INTEGER PRIMARY KEY AUTOINCREMENT,
+            token_mint           TEXT NOT NULL REFERENCES tokens(mint),
+            fetched_at           REAL,
+            delay_minutes        INTEGER,
+            price_usd            REAL,
+            market_cap_usd       REAL,
+            liquidity_usd        REAL,
+            volume_1h            REAL,
+            volume_6h            REAL,
+            volume_24h           REAL,
+            price_change_1h_pct  REAL,
+            price_change_6h_pct  REAL,
             price_change_24h_pct REAL,
-            buys_1h             INTEGER,
-            sells_1h            INTEGER,
-            buys_24h            INTEGER,
-            sells_24h           INTEGER,
-            ath_price_usd       REAL,
-            ath_market_cap_usd  REAL,
-            pair_address        TEXT,
-            source              TEXT,
+            buys_1h              INTEGER,
+            sells_1h             INTEGER,
+            buys_24h             INTEGER,
+            sells_24h            INTEGER,
+            ath_price_usd        REAL,
+            ath_market_cap_usd   REAL,
+            ath_timestamp        REAL,
+            pair_address         TEXT,
+            source               TEXT,
             UNIQUE(token_mint, delay_minutes)
         );
 
@@ -107,13 +117,14 @@ def _create_tables(conn: sqlite3.Connection) -> None:
             ON market_snapshots(CAST(ts / 300 AS INTEGER));
     """)
     conn.commit()
-    _migrate_price_snapshots(conn)
+    _migrate(conn)
 
 
-def _migrate_price_snapshots(conn: sqlite3.Connection) -> None:
+def _migrate(conn: sqlite3.Connection) -> None:
     """Add columns introduced after initial schema without dropping existing data."""
-    existing = {row[1] for row in conn.execute("PRAGMA table_info(price_snapshots)")}
-    new_cols = [
+    # price_snapshots
+    ps_cols = {row[1] for row in conn.execute("PRAGMA table_info(price_snapshots)")}
+    for col, typ in [
         ("volume_1h",            "REAL"),
         ("volume_6h",            "REAL"),
         ("price_change_1h_pct",  "REAL"),
@@ -123,10 +134,31 @@ def _migrate_price_snapshots(conn: sqlite3.Connection) -> None:
         ("sells_1h",             "INTEGER"),
         ("buys_24h",             "INTEGER"),
         ("sells_24h",            "INTEGER"),
-    ]
-    for col, typ in new_cols:
-        if col not in existing:
+        ("ath_timestamp",        "REAL"),
+    ]:
+        if col not in ps_cols:
             conn.execute(f"ALTER TABLE price_snapshots ADD COLUMN {col} {typ}")
+
+    # tokens
+    t_cols = {row[1] for row in conn.execute("PRAGMA table_info(tokens)")}
+    if "bonded_at" not in t_cols:
+        conn.execute("ALTER TABLE tokens ADD COLUMN bonded_at REAL")
+
+    # token_risk
+    tr_cols = {row[1] for row in conn.execute("PRAGMA table_info(token_risk)")}
+    for col, typ in [
+        ("st_score",                "INTEGER"),
+        ("st_rugged",               "INTEGER"),
+        ("st_top10_pct",            "REAL"),
+        ("st_snipers_count",        "INTEGER"),
+        ("st_snipers_pct",          "REAL"),
+        ("st_bundlers_count",       "INTEGER"),
+        ("st_bundlers_initial_pct", "REAL"),
+        ("st_holders",              "INTEGER"),
+    ]:
+        if col not in tr_cols:
+            conn.execute(f"ALTER TABLE token_risk ADD COLUMN {col} {typ}")
+
     conn.commit()
 
 
@@ -159,6 +191,7 @@ def insert_trade(conn: sqlite3.Connection, data: dict) -> None:
 
 
 def upsert_token_risk(conn: sqlite3.Connection, data: dict) -> None:
+    """Upsert RugCheck / GoPlus risk data — does not touch ST columns."""
     conn.execute(
         """
         INSERT INTO token_risk
@@ -179,6 +212,43 @@ def upsert_token_risk(conn: sqlite3.Connection, data: dict) -> None:
             source                   = excluded.source
         """,
         data,
+    )
+    conn.commit()
+
+
+def upsert_token_risk_st(conn: sqlite3.Connection, data: dict) -> None:
+    """Upsert SolanaTracker risk data — does not touch RugCheck columns."""
+    conn.execute(
+        """
+        INSERT INTO token_risk
+            (token_mint, fetched_at,
+             st_score, st_rugged, st_top10_pct,
+             st_snipers_count, st_snipers_pct,
+             st_bundlers_count, st_bundlers_initial_pct, st_holders)
+        VALUES
+            (:token_mint, :fetched_at,
+             :st_score, :st_rugged, :st_top10_pct,
+             :st_snipers_count, :st_snipers_pct,
+             :st_bundlers_count, :st_bundlers_initial_pct, :st_holders)
+        ON CONFLICT(token_mint) DO UPDATE SET
+            st_score                = excluded.st_score,
+            st_rugged               = excluded.st_rugged,
+            st_top10_pct            = excluded.st_top10_pct,
+            st_snipers_count        = excluded.st_snipers_count,
+            st_snipers_pct          = excluded.st_snipers_pct,
+            st_bundlers_count       = excluded.st_bundlers_count,
+            st_bundlers_initial_pct = excluded.st_bundlers_initial_pct,
+            st_holders              = excluded.st_holders
+        """,
+        data,
+    )
+    conn.commit()
+
+
+def set_token_bonded(conn: sqlite3.Connection, mint: str, bonded_at: float) -> None:
+    conn.execute(
+        "UPDATE tokens SET bonded_at = ? WHERE mint = ? AND bonded_at IS NULL",
+        (bonded_at, mint),
     )
     conn.commit()
 
@@ -204,13 +274,13 @@ def insert_snapshot(conn: sqlite3.Connection, data: dict) -> None:
              liquidity_usd, volume_1h, volume_6h, volume_24h,
              price_change_1h_pct, price_change_6h_pct, price_change_24h_pct,
              buys_1h, sells_1h, buys_24h, sells_24h,
-             ath_price_usd, ath_market_cap_usd, pair_address, source)
+             ath_price_usd, ath_market_cap_usd, ath_timestamp, pair_address, source)
         VALUES
             (:token_mint, :fetched_at, :delay_minutes, :price_usd, :market_cap_usd,
              :liquidity_usd, :volume_1h, :volume_6h, :volume_24h,
              :price_change_1h_pct, :price_change_6h_pct, :price_change_24h_pct,
              :buys_1h, :sells_1h, :buys_24h, :sells_24h,
-             :ath_price_usd, :ath_market_cap_usd, :pair_address, :source)
+             :ath_price_usd, :ath_market_cap_usd, :ath_timestamp, :pair_address, :source)
         """,
         data,
     )
