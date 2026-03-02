@@ -40,6 +40,7 @@ _active_subscriptions: set[str] = set()
 
 
 def _extract_token(event: dict) -> dict:
+    mayhem = event.get("is_mayhem_mode")
     return {
         "mint": event.get("mint"),
         "name": event.get("name"),
@@ -53,6 +54,9 @@ def _extract_token(event: dict) -> dict:
         "website_url": event.get("website"),
         "description": event.get("description"),
         "status": "watching",
+        "pool": event.get("pool"),
+        "initial_market_cap_sol": event.get("marketCapSol"),
+        "is_mayhem_mode": 1 if mayhem else (0 if mayhem is not None else None),
     }
 
 

@@ -28,9 +28,12 @@ def _create_tables(conn: sqlite3.Connection) -> None:
             telegram_url        TEXT,
             website_url         TEXT,
             description         TEXT,
-            status              TEXT DEFAULT 'watching',
-            bonded_at           REAL,
-            migrated_at         REAL
+            status                TEXT DEFAULT 'watching',
+            bonded_at             REAL,
+            migrated_at           REAL,
+            pool                  TEXT,
+            initial_market_cap_sol REAL,
+            is_mayhem_mode        INTEGER
         );
 
         CREATE TABLE IF NOT EXISTS trades (
@@ -160,6 +163,12 @@ def _migrate(conn: sqlite3.Connection) -> None:
         conn.execute("ALTER TABLE tokens ADD COLUMN bonded_at REAL")
     if "migrated_at" not in t_cols:
         conn.execute("ALTER TABLE tokens ADD COLUMN migrated_at REAL")
+    if "pool" not in t_cols:
+        conn.execute("ALTER TABLE tokens ADD COLUMN pool TEXT")
+    if "initial_market_cap_sol" not in t_cols:
+        conn.execute("ALTER TABLE tokens ADD COLUMN initial_market_cap_sol REAL")
+    if "is_mayhem_mode" not in t_cols:
+        conn.execute("ALTER TABLE tokens ADD COLUMN is_mayhem_mode INTEGER")
 
     # token_risk
     tr_cols = {row[1] for row in conn.execute("PRAGMA table_info(token_risk)")}
@@ -198,10 +207,12 @@ def insert_token(conn: sqlite3.Connection, data: dict) -> None:
         """
         INSERT OR IGNORE INTO tokens
             (mint, name, symbol, creator, bonding_curve, created_at,
-             metadata_uri, twitter_url, telegram_url, website_url, description, status)
+             metadata_uri, twitter_url, telegram_url, website_url, description, status,
+             pool, initial_market_cap_sol, is_mayhem_mode)
         VALUES
             (:mint, :name, :symbol, :creator, :bonding_curve, :created_at,
-             :metadata_uri, :twitter_url, :telegram_url, :website_url, :description, :status)
+             :metadata_uri, :twitter_url, :telegram_url, :website_url, :description, :status,
+             :pool, :initial_market_cap_sol, :is_mayhem_mode)
         """,
         data,
     )
