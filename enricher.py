@@ -163,6 +163,15 @@ async def _fetch_cryptopanic(
     return len(titles), titles
 
 
+def _wallet_list(group: dict) -> str:
+    """Extract wallet addresses from an ST risk group as a JSON array string."""
+    wallets = [
+        w["wallet"] for w in (group.get("wallets") or [])
+        if isinstance(w, dict) and w.get("wallet")
+    ]
+    return json.dumps(wallets)
+
+
 def _parse_st_risk(token_data: dict) -> dict:
     """Parse a single token entry from POST /tokens/multi response into ST risk fields."""
     risk     = token_data.get("risk") or {}
@@ -198,6 +207,9 @@ def _parse_st_risk(token_data: dict) -> dict:
         "st_dev_amount":               _float(dev.get("amount")),
         "st_curve_pct":                curve_pct,
         "st_holders":                  _int(token_data.get("holders")),
+        "st_sniper_wallets":           _wallet_list(snipers),
+        "st_bundler_wallets":          _wallet_list(bundlers),
+        "st_insider_wallets":          _wallet_list(insiders),
     }
 
 

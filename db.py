@@ -76,7 +76,10 @@ def _create_tables(conn: sqlite3.Connection) -> None:
             st_dev_pct                    REAL,
             st_dev_amount                 REAL,
             st_curve_pct                  REAL,
-            st_holders                    INTEGER
+            st_holders                    INTEGER,
+            st_sniper_wallets             TEXT,
+            st_bundler_wallets            TEXT,
+            st_insider_wallets            TEXT
         );
 
         CREATE TABLE IF NOT EXISTS social_mentions (
@@ -180,6 +183,9 @@ def _migrate(conn: sqlite3.Connection) -> None:
         ("st_dev_amount",               "REAL"),
         ("st_curve_pct",                "REAL"),
         ("st_holders",                  "INTEGER"),
+        ("st_sniper_wallets",           "TEXT"),
+        ("st_bundler_wallets",          "TEXT"),
+        ("st_insider_wallets",          "TEXT"),
     ]:
         if col not in tr_cols:
             conn.execute(f"ALTER TABLE token_risk ADD COLUMN {col} {typ}")
@@ -254,7 +260,8 @@ def upsert_token_risk_st(conn: sqlite3.Connection, data: dict) -> None:
              st_bundlers_initial_pct, st_bundlers_initial_balance,
              st_insiders_count, st_insiders_pct, st_insiders_balance,
              st_dev_pct, st_dev_amount,
-             st_curve_pct, st_holders)
+             st_curve_pct, st_holders,
+             st_sniper_wallets, st_bundler_wallets, st_insider_wallets)
         VALUES
             (:token_mint, :fetched_at,
              :st_score, :st_rugged, :st_jupiter_verified,
@@ -264,7 +271,8 @@ def upsert_token_risk_st(conn: sqlite3.Connection, data: dict) -> None:
              :st_bundlers_initial_pct, :st_bundlers_initial_balance,
              :st_insiders_count, :st_insiders_pct, :st_insiders_balance,
              :st_dev_pct, :st_dev_amount,
-             :st_curve_pct, :st_holders)
+             :st_curve_pct, :st_holders,
+             :st_sniper_wallets, :st_bundler_wallets, :st_insider_wallets)
         ON CONFLICT(token_mint) DO UPDATE SET
             st_score                    = excluded.st_score,
             st_rugged                   = excluded.st_rugged,
@@ -284,7 +292,10 @@ def upsert_token_risk_st(conn: sqlite3.Connection, data: dict) -> None:
             st_dev_pct                  = excluded.st_dev_pct,
             st_dev_amount               = excluded.st_dev_amount,
             st_curve_pct                = excluded.st_curve_pct,
-            st_holders                  = excluded.st_holders
+            st_holders                  = excluded.st_holders,
+            st_sniper_wallets           = excluded.st_sniper_wallets,
+            st_bundler_wallets          = excluded.st_bundler_wallets,
+            st_insider_wallets          = excluded.st_insider_wallets
         """,
         data,
     )

@@ -161,12 +161,18 @@ async def _fetch_solanatracker_risk(
     dev      = risk.get("dev") or {}
     pools    = data.get("pools") or []
 
-    # curvePercentage from the pumpfun pool (if present)
     curve_pct: float | None = None
     for pool in pools:
         if isinstance(pool, dict) and pool.get("curvePercentage") is not None:
             curve_pct = _float(pool["curvePercentage"])
             break
+
+    def _wallet_list(group: dict) -> str:
+        wallets = [
+            w["wallet"] for w in (group.get("wallets") or [])
+            if isinstance(w, dict) and w.get("wallet")
+        ]
+        return json.dumps(wallets)
 
     return {
         "st_score":                    _int(risk.get("score")),
@@ -188,6 +194,9 @@ async def _fetch_solanatracker_risk(
         "st_dev_amount":               _float(dev.get("amount")),
         "st_curve_pct":                curve_pct,
         "st_holders":                  _int(data.get("holders")),
+        "st_sniper_wallets":           _wallet_list(snipers),
+        "st_bundler_wallets":          _wallet_list(bundlers),
+        "st_insider_wallets":          _wallet_list(insiders),
     }
 
 
