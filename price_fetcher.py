@@ -229,13 +229,29 @@ async def _fetch_and_store_snapshot(
     now = time.time()
 
     for mint in mints:
+        # Check for ATH data already stored from an earlier snapshot
+        existing_ath = conn.execute(
+            """
+            SELECT ath_price_usd, ath_market_cap_usd
+            FROM price_snapshots
+            WHERE token_mint = ? AND ath_price_usd IS NOT NULL
+            ORDER BY delay_minutes DESC LIMIT 1
+            """,
+            (mint,),
+        ).fetchone()
+
         if mint in ds_results:
             parsed = _parse_dexscreener_pair(ds_results[mint])
-            # Always supplement with SolanaTracker for real ATH data
-            st = await _fetch_solanatracker(session, mint)
-            if st:
-                parsed["ath_price_usd"] = st["ath_price_usd"]
-                parsed["ath_market_cap_usd"] = st["ath_market_cap_usd"]
+            if existing_ath:
+                # Reuse stored ATH — SolanaTracker always returns current ATH anyway
+                parsed["ath_price_usd"] = existing_ath["ath_price_usd"]
+                parsed["ath_market_cap_usd"] = existing_ath["ath_market_cap_usd"]
+            else:
+                # First snapshot for this token — call SolanaTracker
+                st = await _fetch_solanatracker(session, mint)
+                if st:
+                    parsed["ath_price_usd"] = st["ath_price_usd"]
+                    parsed["ath_market_cap_usd"] = st["ath_market_cap_usd"]
         else:
             # Full fallback to SolanaTracker (price + ATH)
             parsed = await _fetch_solanatracker(session, mint)
