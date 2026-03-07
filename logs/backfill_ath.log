@@ -1,0 +1,426 @@
+2026-03-02 10:13:35,390 [INFO] Tokens to check: 7187
+2026-03-02 10:13:36,774 [INFO] [30/7187] bonded=0  ath_filled=0  risk_filled=0  skipped=30  eta=330s
+2026-03-02 10:13:39,245 [INFO] ATH  AGKvJRB2GZNEzkbwLhStzk5QjjiBvPHg3XnPgAbwyZ5e  ath_mc=$61687  bonded_at~yes
+2026-03-02 10:13:42,500 [INFO] [60/7187] bonded=1  ath_filled=1  risk_filled=1  skipped=59  eta=844s
+2026-03-02 10:13:44,024 [INFO] [90/7187] bonded=1  ath_filled=1  risk_filled=1  skipped=89  eta=681s
+2026-03-02 10:13:45,331 [INFO] [120/7187] bonded=1  ath_filled=1  risk_filled=1  skipped=119  eta=585s
+2026-03-02 10:13:47,656 [INFO] ATH  9QNw7B9EKUoaWZFsdho5UNqF5kLNZh7Ro12XZDkRpump  ath_mc=$54355  bonded_at~yes
+2026-03-02 10:13:50,907 [INFO] [150/7187] bonded=2  ath_filled=2  risk_filled=2  skipped=148  eta=728s
+2026-03-02 10:13:53,231 [INFO] ATH  9kgj3GFKp8YsPtZy2rEFTAYGmpn8TvR4LzYtYR6Mpump  ath_mc=$35155  bonded_at~yes
+2026-03-02 10:13:56,480 [INFO] [180/7187] bonded=3  ath_filled=3  risk_filled=3  skipped=177  eta=821s
+2026-03-02 10:13:58,835 [INFO] ATH  5t7KyA6BkYnvM7LSanVsrCT68g9m4B6W37FDAXPvpump  ath_mc=$32421  bonded_at~yes
+2026-03-02 10:14:02,107 [INFO] [210/7187] bonded=4  ath_filled=4  risk_filled=4  skipped=206  eta=888s
+2026-03-02 10:14:05,151 [INFO] ATH  ESj828qw16KFhoAruwGJRKsALhEqmnxX2Cs7KYL4pump  ath_mc=$46480  bonded_at~yes
+2026-03-02 10:14:08,393 [INFO] [240/7187] bonded=5  ath_filled=5  risk_filled=5  skipped=235  eta=955s
+2026-03-02 10:14:09,719 [INFO] [270/7187] bonded=5  ath_filled=5  risk_filled=5  skipped=265  eta=879s
+2026-03-02 10:14:11,280 [INFO] [300/7187] bonded=5  ath_filled=5  risk_filled=5  skipped=295  eta=824s
+2026-03-02 10:14:16,740 [INFO] [330/7187] bonded=6  ath_filled=5  risk_filled=6  skipped=324  eta=859s
+2026-03-02 10:14:18,027 [INFO] [360/7187] bonded=6  ath_filled=5  risk_filled=6  skipped=354  eta=809s
+2026-03-02 10:14:19,366 [INFO] [390/7187] bonded=6  ath_filled=5  risk_filled=6  skipped=384  eta=766s
+2026-03-02 10:14:24,749 [INFO] [420/7187] bonded=7  ath_filled=5  risk_filled=6  skipped=413  eta=795s
+2026-03-02 10:14:26,068 [INFO] [450/7187] bonded=7  ath_filled=5  risk_filled=6  skipped=443  eta=759s
+2026-03-02 10:14:28,399 [INFO] ATH  HuL76gj4uEdGRFSDXzpvpFpyxnovpnWqYB7ybcW2pump  ath_mc=$47597  bonded_at~yes
+2026-03-02 10:14:31,640 [INFO] [480/7187] bonded=8  ath_filled=6  risk_filled=7  skipped=472  eta=786s
+2026-03-02 10:14:32,947 [INFO] [510/7187] bonded=8  ath_filled=6  risk_filled=7  skipped=502  eta=754s
+2026-03-02 10:14:35,276 [INFO] ATH  G8KrqCxAghTqjsZDz3ihC6PB57DfYnHSMA8RAQo4pump  ath_mc=$63454  bonded_at~yes
+2026-03-02 10:14:39,509 [INFO] ATH  96EVXYbtt13amFmzf7WaiDbvjFKZenYjC3mkXXzSpump  ath_mc=$65521  bonded_at~yes
+2026-03-02 10:14:42,746 [INFO] [540/7187] bonded=10  ath_filled=8  risk_filled=9  skipped=530  eta=829s
+2026-03-02 10:14:44,073 [INFO] [570/7187] bonded=10  ath_filled=8  risk_filled=9  skipped=560  eta=797s
+2026-03-02 10:14:45,655 [INFO] [600/7187] bonded=10  ath_filled=8  risk_filled=9  skipped=590  eta=771s
+2026-03-02 10:14:47,956 [INFO] ATH  41iR3ejFc4zTdn4LJeMhKUTZfQkV4xCahCRYtV1xpump  ath_mc=$234692  bonded_at~yes
+2026-03-02 10:14:52,221 [INFO] ATH  AVd5GHJVMZypiP4HYEB5huS5axd8PNiUoaRX5yQxpump  ath_mc=$380209  bonded_at~yes
+2026-03-02 10:14:55,458 [INFO] [630/7187] bonded=12  ath_filled=10  risk_filled=11  skipped=618  eta=833s
+2026-03-02 10:14:57,771 [INFO] ATH  EdS6dBmVD4Hj7aB8cfobeKsS5ndhfTGnMKJujTqPpump  ath_mc=$64467  bonded_at~yes
+2026-03-02 10:15:00,999 [INFO] [660/7187] bonded=13  ath_filled=11  risk_filled=12  skipped=647  eta=847s
+2026-03-02 10:15:02,333 [INFO] [690/7187] bonded=13  ath_filled=11  risk_filled=12  skipped=677  eta=819s
+2026-03-02 10:15:04,635 [INFO] ATH  CGiwE3tGYF7wCm4iF1A1mJTq9NAv4sKaZ1gnUZQwpump  ath_mc=$117308  bonded_at~yes
+2026-03-02 10:15:08,886 [INFO] ATH  9TpJ6Xxk97qDMrccEtfa25QShNZ3rUdrdr7UvK4Zpump  ath_mc=$129147  bonded_at~yes
+2026-03-02 10:15:12,117 [INFO] [720/7187] bonded=15  ath_filled=13  risk_filled=14  skipped=705  eta=869s
+2026-03-02 10:15:13,430 [INFO] [750/7187] bonded=15  ath_filled=13  risk_filled=14  skipped=735  eta=841s
+2026-03-02 10:15:16,061 [INFO] ATH  BwSCHSzT24abUP9SyfniaZJxe9WYy1FozWR7uPYdpump  ath_mc=$60879  bonded_at~yes
+2026-03-02 10:15:19,296 [INFO] [780/7187] bonded=16  ath_filled=14  risk_filled=15  skipped=764  eta=853s
+2026-03-02 10:15:21,684 [INFO] ATH  CWNpY4iick2uBXbz8tY4g23Mm2Hah3RZcdnvX61kpump  ath_mc=$62497  bonded_at~yes
+2026-03-02 10:15:24,939 [INFO] [810/7187] bonded=17  ath_filled=15  risk_filled=16  skipped=793  eta=862s
+2026-03-02 10:15:27,266 [INFO] ATH  HerFh55jHjyKyjvy1QZRBRmS7n3RqvAaXuNSg9V2pump  ath_mc=$51020  bonded_at~yes
+2026-03-02 10:15:30,509 [INFO] [840/7187] bonded=18  ath_filled=16  risk_filled=17  skipped=822  eta=870s
+2026-03-02 10:15:32,847 [INFO] ATH  FqA1ZRqLh1gntbktM4tMoiSAsy277hqfMSQCEPkspump  ath_mc=$74816  bonded_at~yes
+2026-03-02 10:15:36,083 [INFO] [870/7187] bonded=19  ath_filled=17  risk_filled=18  skipped=851  eta=876s
+2026-03-02 10:15:37,395 [INFO] [900/7187] bonded=19  ath_filled=17  risk_filled=18  skipped=881  eta=852s
+2026-03-02 10:15:39,708 [INFO] ATH  WPMJxgaho3FEMQbqoXLErkuMQEb4zNxnmWyUGv1pump  ath_mc=$98158  bonded_at~yes
+2026-03-02 10:15:42,967 [INFO] [930/7187] bonded=20  ath_filled=18  risk_filled=19  skipped=910  eta=858s
+2026-03-02 10:15:44,281 [INFO] [960/7187] bonded=20  ath_filled=18  risk_filled=19  skipped=940  eta=836s
+2026-03-02 10:15:45,570 [INFO] [990/7187] bonded=20  ath_filled=18  risk_filled=19  skipped=970  eta=815s
+2026-03-02 10:15:46,887 [INFO] [1020/7187] bonded=20  ath_filled=18  risk_filled=19  skipped=1000  eta=795s
+2026-03-02 10:15:48,253 [INFO] [1050/7187] bonded=20  ath_filled=18  risk_filled=19  skipped=1030  eta=777s
+2026-03-02 10:15:50,571 [INFO] ATH  BMpk47S26XQXjPLVf6X4i3KWrCiWpHazzkC7Ybrkpump  ath_mc=$182748  bonded_at~yes
+2026-03-02 10:15:53,798 [INFO] [1080/7187] bonded=21  ath_filled=19  risk_filled=20  skipped=1059  eta=783s
+2026-03-02 10:15:55,133 [INFO] [1110/7187] bonded=21  ath_filled=19  risk_filled=20  skipped=1089  eta=765s
+2026-03-02 10:15:57,478 [INFO] ATH  DiUkWuodgLAw4vrkWuCUm4dJQGENmuZnK7aR7r6Wpump  ath_mc=$37796  bonded_at~yes
+2026-03-02 10:16:00,724 [INFO] [1140/7187] bonded=22  ath_filled=20  risk_filled=21  skipped=1118  eta=771s
+2026-03-02 10:16:02,059 [INFO] [1170/7187] bonded=22  ath_filled=20  risk_filled=21  skipped=1148  eta=754s
+2026-03-02 10:16:03,428 [INFO] [1200/7187] bonded=22  ath_filled=20  risk_filled=21  skipped=1178  eta=739s
+2026-03-02 10:16:04,738 [INFO] [1230/7187] bonded=22  ath_filled=20  risk_filled=21  skipped=1208  eta=723s
+2026-03-02 10:16:07,269 [INFO] ATH  Hcg48jTsofhmUuePSEXvFt2mwWhLMTuVnEA9RXiUTbkv  ath_mc=$36196  bonded_at~yes
+2026-03-02 10:16:10,495 [INFO] [1260/7187] bonded=23  ath_filled=21  risk_filled=22  skipped=1237  eta=730s
+2026-03-02 10:16:12,804 [INFO] ATH  GKcwFoFTXaz3jaiRGAumh8natEaaZcA8WDhhzExwpump  ath_mc=$35343  bonded_at~yes
+2026-03-02 10:16:16,052 [INFO] [1290/7187] bonded=24  ath_filled=22  risk_filled=23  skipped=1266  eta=734s
+2026-03-02 10:16:18,379 [INFO] ATH  AeuQiCRcx7A5C9wgQ9fEwTEbVZiwqi5qqi7VuUcdpump  ath_mc=$158504  bonded_at~yes
+2026-03-02 10:16:21,621 [INFO] [1320/7187] bonded=25  ath_filled=23  risk_filled=24  skipped=1295  eta=739s
+2026-03-02 10:16:22,929 [INFO] [1350/7187] bonded=25  ath_filled=23  risk_filled=24  skipped=1325  eta=724s
+2026-03-02 10:16:25,236 [INFO] ATH  G9MMX9w2gXa4HcWPsXAFi364c4HkhDyMeojrHUkipump  ath_mc=$51303  bonded_at~yes
+2026-03-02 10:16:28,479 [INFO] [1380/7187] bonded=26  ath_filled=24  risk_filled=25  skipped=1354  eta=728s
+2026-03-02 10:16:29,781 [INFO] [1410/7187] bonded=26  ath_filled=24  risk_filled=25  skipped=1384  eta=715s
+2026-03-02 10:16:32,150 [INFO] ATH  8Upn5PyPivLhpVP7DKCP4uYXdcNxdd34jz3P9Zdbpump  ath_mc=$497106  bonded_at~yes
+2026-03-02 10:16:35,400 [INFO] [1440/7187] bonded=27  ath_filled=25  risk_filled=26  skipped=1413  eta=718s
+2026-03-02 10:16:36,717 [INFO] [1470/7187] bonded=27  ath_filled=25  risk_filled=26  skipped=1443  eta=705s
+2026-03-02 10:16:39,031 [INFO] ATH  MNCT6af9YJNExBiZARvgyEG9PdSFtfcE5ckZCU2pump  ath_mc=$38051  bonded_at~yes
+2026-03-02 10:16:42,292 [INFO] [1500/7187] bonded=28  ath_filled=26  risk_filled=27  skipped=1472  eta=709s
+2026-03-02 10:16:44,866 [INFO] ATH  9WdKbqqwsst1zUqh617k5LQG7wsGUFDUWX7nZEEkdnhf  ath_mc=$54555  bonded_at~yes
+2026-03-02 10:16:48,118 [INFO] [1530/7187] bonded=29  ath_filled=27  risk_filled=28  skipped=1501  eta=713s
+2026-03-02 10:16:49,426 [INFO] [1560/7187] bonded=29  ath_filled=27  risk_filled=28  skipped=1531  eta=700s
+2026-03-02 10:16:51,761 [INFO] ATH  2er771pgLR2TtqYy5nisbKyW9dDXyBT2HdHvwB3Gpump  ath_mc=$176142  bonded_at~yes
+2026-03-02 10:16:55,012 [INFO] [1590/7187] bonded=30  ath_filled=28  risk_filled=29  skipped=1560  eta=703s
+2026-03-02 10:16:56,345 [INFO] [1620/7187] bonded=30  ath_filled=28  risk_filled=29  skipped=1590  eta=691s
+2026-03-02 10:16:57,656 [INFO] [1650/7187] bonded=30  ath_filled=28  risk_filled=29  skipped=1620  eta=679s
+2026-03-02 10:16:58,985 [INFO] [1680/7187] bonded=30  ath_filled=28  risk_filled=29  skipped=1650  eta=667s
+2026-03-02 10:17:00,273 [INFO] [1710/7187] bonded=30  ath_filled=28  risk_filled=29  skipped=1680  eta=656s
+2026-03-02 10:17:01,555 [INFO] [1740/7187] bonded=30  ath_filled=28  risk_filled=29  skipped=1710  eta=645s
+2026-03-02 10:17:03,881 [INFO] ATH  8TCq5T3STTkXiXrHHdYF2VTWxaNEUo4a3uPirCwopump  ath_mc=$197993  bonded_at~yes
+2026-03-02 10:17:07,117 [INFO] [1770/7187] bonded=31  ath_filled=29  risk_filled=30  skipped=1739  eta=648s
+2026-03-02 10:17:08,423 [INFO] [1800/7187] bonded=31  ath_filled=29  risk_filled=30  skipped=1769  eta=638s
+2026-03-02 10:17:09,714 [INFO] [1830/7187] bonded=31  ath_filled=29  risk_filled=30  skipped=1799  eta=627s
+2026-03-02 10:17:11,027 [INFO] [1860/7187] bonded=31  ath_filled=29  risk_filled=30  skipped=1829  eta=618s
+2026-03-02 10:17:12,319 [INFO] [1890/7187] bonded=31  ath_filled=29  risk_filled=30  skipped=1859  eta=608s
+2026-03-02 10:17:14,848 [INFO] ATH  D1GGpMZpWnrQvTNHVZewUPMepHz7vFbqqhQaFRRFpump  ath_mc=$46067  bonded_at~yes
+2026-03-02 10:17:18,099 [INFO] [1920/7187] bonded=32  ath_filled=30  risk_filled=31  skipped=1888  eta=611s
+2026-03-02 10:17:19,380 [INFO] [1950/7187] bonded=32  ath_filled=30  risk_filled=31  skipped=1918  eta=602s
+2026-03-02 10:17:20,688 [INFO] [1980/7187] bonded=32  ath_filled=30  risk_filled=31  skipped=1948  eta=592s
+2026-03-02 10:17:23,283 [INFO] ATH  GTfY9RcsMqRCh3Km1gdMzbiNPCY5pEGn3FtWjwrZpump  ath_mc=$121293  bonded_at~yes
+2026-03-02 10:17:26,535 [INFO] [2010/7187] bonded=33  ath_filled=31  risk_filled=32  skipped=1977  eta=595s
+2026-03-02 10:17:27,819 [INFO] [2040/7187] bonded=33  ath_filled=31  risk_filled=32  skipped=2007  eta=586s
+2026-03-02 10:17:29,133 [INFO] [2070/7187] bonded=33  ath_filled=31  risk_filled=32  skipped=2037  eta=578s
+2026-03-02 10:17:31,461 [INFO] ATH  6DCqVHWKnzTgenoNqEraL57R9PsvjLhd6VWX5yGapump  ath_mc=$35835  bonded_at~yes
+2026-03-02 10:17:35,700 [INFO] ATH  HvNbf6FJC8N8gGT2Vqy3jXDvtsHDhkj8DY5PQTYLpump  ath_mc=$50845  bonded_at~yes
+2026-03-02 10:17:38,954 [INFO] [2100/7187] bonded=35  ath_filled=33  risk_filled=34  skipped=2065  eta=590s
+2026-03-02 10:17:40,281 [INFO] [2130/7187] bonded=35  ath_filled=33  risk_filled=34  skipped=2095  eta=581s
+2026-03-02 10:17:41,592 [INFO] [2160/7187] bonded=35  ath_filled=33  risk_filled=34  skipped=2125  eta=573s
+2026-03-02 10:17:43,909 [INFO] ATH  BroixebY3yiiqK7ibEuEufVmqFrLTJhiDoWiFUATpump  ath_mc=$49703  bonded_at~yes
+2026-03-02 10:17:47,222 [INFO] [2190/7187] bonded=36  ath_filled=34  risk_filled=35  skipped=2154  eta=575s
+2026-03-02 10:17:49,556 [INFO] ATH  9vGp9oXQJ2yKQUA4ugLpd6gWx41AGHALsVf4v6Yipump  ath_mc=$80474  bonded_at~yes
+2026-03-02 10:17:52,799 [INFO] [2220/7187] bonded=37  ath_filled=35  risk_filled=36  skipped=2183  eta=576s
+2026-03-02 10:17:55,128 [INFO] ATH  FEzh1wkHaWj32kAew8YDLkQTLnXRhevZCAWe7WWepump  ath_mc=$60116  bonded_at~yes
+2026-03-02 10:17:59,388 [INFO] ATH  Bak9w2n6bYLRuFbXhN3zzizGCUdC8r4Zwi4HW9bUpump  ath_mc=$75098  bonded_at~yes
+2026-03-02 10:18:02,625 [INFO] [2250/7187] bonded=39  ath_filled=37  risk_filled=38  skipped=2211  eta=586s
+2026-03-02 10:18:04,952 [INFO] ATH  94zLz8vmZVThhCVhoaWtbtNSecAwshM1pfqQKQ4pump  ath_mc=$132022  bonded_at~yes
+2026-03-02 10:18:08,202 [INFO] [2280/7187] bonded=40  ath_filled=38  risk_filled=39  skipped=2240  eta=587s
+2026-03-02 10:18:09,536 [INFO] [2310/7187] bonded=40  ath_filled=38  risk_filled=39  skipped=2270  eta=579s
+2026-03-02 10:18:11,850 [INFO] ATH  BdgbfCXp8wjLp1X2JvH19s7vX5AZ5udcThMJeTXqpump  ath_mc=$36352  bonded_at~yes
+2026-03-02 10:18:15,090 [INFO] [2340/7187] bonded=41  ath_filled=39  risk_filled=40  skipped=2299  eta=579s
+2026-03-02 10:18:17,405 [INFO] ATH  Aq18fruoDikQ6focBhnYwKhwtcCHb7xwcLdewcPQpump  ath_mc=$36555  bonded_at~yes
+2026-03-02 10:18:21,662 [INFO] ATH  HC13R7jgaqq3s1EVXDn5XHTTZ3utzGdBSPini1grpump  ath_mc=$63941  bonded_at~yes
+2026-03-02 10:18:24,910 [INFO] [2370/7187] bonded=43  ath_filled=41  risk_filled=42  skipped=2327  eta=588s
+2026-03-02 10:18:26,223 [INFO] [2400/7187] bonded=43  ath_filled=41  risk_filled=42  skipped=2357  eta=580s
+2026-03-02 10:18:28,577 [INFO] ATH  CBpm4yH9VyacSqvyN9c94mBSCm3jUtFUKWk57CTcpump  ath_mc=$34466  bonded_at~yes
+2026-03-02 10:18:32,832 [INFO] ATH  6VS12kFTsR52ZtuiPA2ACcxaPYhTaMcqqKod8Dixpump  ath_mc=$35127  bonded_at~yes
+2026-03-02 10:18:36,059 [INFO] [2430/7187] bonded=45  ath_filled=43  risk_filled=44  skipped=2385  eta=589s
+2026-03-02 10:18:37,345 [INFO] [2460/7187] bonded=45  ath_filled=43  risk_filled=44  skipped=2415  eta=580s
+2026-03-02 10:18:38,643 [INFO] [2490/7187] bonded=45  ath_filled=43  risk_filled=44  skipped=2445  eta=572s
+2026-03-02 10:18:39,959 [INFO] [2520/7187] bonded=45  ath_filled=43  risk_filled=44  skipped=2475  eta=564s
+2026-03-02 10:18:41,243 [INFO] [2550/7187] bonded=45  ath_filled=43  risk_filled=44  skipped=2505  eta=556s
+2026-03-02 10:18:42,570 [INFO] [2580/7187] bonded=45  ath_filled=43  risk_filled=44  skipped=2535  eta=549s
+2026-03-02 10:18:43,906 [INFO] [2610/7187] bonded=45  ath_filled=43  risk_filled=44  skipped=2565  eta=541s
+2026-03-02 10:18:46,243 [INFO] ATH  6zTwdXZtsSsZRCDzXU86B58srJQ8xNYLBqMdaRMepump  ath_mc=$116085  bonded_at~yes
+2026-03-02 10:18:49,475 [INFO] [2640/7187] bonded=46  ath_filled=44  risk_filled=45  skipped=2594  eta=541s
+2026-03-02 10:18:50,759 [INFO] [2670/7187] bonded=46  ath_filled=44  risk_filled=45  skipped=2624  eta=534s
+2026-03-02 10:18:52,099 [INFO] [2700/7187] bonded=46  ath_filled=44  risk_filled=45  skipped=2654  eta=526s
+2026-03-02 10:18:54,444 [INFO] ATH  2yokJjNBcmVRrvMtqGWNRFjD1Z7u1RCksn19crjmpump  ath_mc=$96012  bonded_at~yes
+2026-03-02 10:18:58,719 [INFO] ATH  BYkqaT7mtnXrvBB2BBJ2eMzgMcPtJ2oskRrUmCeopump  ath_mc=$459391  bonded_at~yes
+2026-03-02 10:19:01,968 [INFO] [2730/7187] bonded=48  ath_filled=46  risk_filled=47  skipped=2682  eta=533s
+2026-03-02 10:19:04,540 [INFO] ATH  eYUTtZ2HHDAFvjhweykv7Us3ayhn9rcKWEvYF8Kpump  ath_mc=$34366  bonded_at~yes
+2026-03-02 10:19:07,792 [INFO] [2760/7187] bonded=49  ath_filled=47  risk_filled=48  skipped=2711  eta=533s
+2026-03-02 10:19:10,144 [INFO] ATH  BmPZsHh2fnfcfeKVVuMAKkAzCdDFMYoJxKgkn2egpump  ath_mc=$34852  bonded_at~yes
+2026-03-02 10:19:14,397 [INFO] ATH  A5RZvkVYkzCrEPbQReh77GDhEhumgismStm7oEiupump  ath_mc=$34846  bonded_at~yes
+2026-03-02 10:19:17,624 [INFO] [2790/7187] bonded=51  ath_filled=49  risk_filled=50  skipped=2739  eta=539s
+2026-03-02 10:19:18,972 [INFO] [2820/7187] bonded=51  ath_filled=49  risk_filled=50  skipped=2769  eta=532s
+2026-03-02 10:19:20,534 [INFO] [2850/7187] bonded=51  ath_filled=49  risk_filled=50  skipped=2799  eta=525s
+2026-03-02 10:19:22,875 [INFO] ATH  6no9kKpDjdZvrg2TUBfQ2BjUWcMtPfdSsryh495npump  ath_mc=$53203  bonded_at~yes
+2026-03-02 10:19:26,130 [INFO] [2880/7187] bonded=52  ath_filled=50  risk_filled=51  skipped=2828  eta=525s
+2026-03-02 10:19:27,496 [INFO] [2910/7187] bonded=52  ath_filled=50  risk_filled=51  skipped=2858  eta=518s
+2026-03-02 10:19:29,835 [INFO] ATH  4Yd51JhJXnmQNQz6bHsAnExsN4sLcK9N2iMFmQxtpump  ath_mc=$88802  bonded_at~yes
+2026-03-02 10:19:34,099 [INFO] ATH  Hegkg9B2vEsGo83xp7aaCXinAgvQqT3nVpVmi3itpump  ath_mc=$57194  bonded_at~yes
+2026-03-02 10:19:37,342 [INFO] [2940/7187] bonded=54  ath_filled=52  risk_filled=53  skipped=2886  eta=523s
+2026-03-02 10:19:38,673 [INFO] [2970/7187] bonded=54  ath_filled=52  risk_filled=53  skipped=2916  eta=516s
+2026-03-02 10:19:41,071 [INFO] ATH  ctQPRPpLY52CeEfmJqUEhYQ6SmMVHitkU3KKEDUpump  ath_mc=$498615  bonded_at~yes
+2026-03-02 10:19:44,311 [INFO] [3000/7187] bonded=55  ath_filled=53  risk_filled=54  skipped=2945  eta=515s
+2026-03-02 10:19:46,649 [INFO] ATH  3sxMsCqa6VgLA1ofPTuHy6D5bey1BKn16Cv1c9Aypump  ath_mc=$43106  bonded_at~yes
+2026-03-02 10:19:49,903 [INFO] [3030/7187] bonded=56  ath_filled=54  risk_filled=55  skipped=2974  eta=514s
+2026-03-02 10:19:55,316 [INFO] [3060/7187] bonded=57  ath_filled=54  risk_filled=55  skipped=3003  eta=512s
+2026-03-02 10:19:57,737 [INFO] ATH  MFEuGXz68GtrFiPjNt5jfZLp97gJdjkWt596ps1pump  ath_mc=$37956  bonded_at~yes
+2026-03-02 10:20:01,995 [INFO] ATH  2qNcApDeGd95MDYDyUM645Zkn4pZTbtUd8Ka8zCPpump  ath_mc=$104666  bonded_at~yes
+2026-03-02 10:20:05,237 [INFO] [3090/7187] bonded=59  ath_filled=56  risk_filled=57  skipped=3031  eta=517s
+2026-03-02 10:20:07,387 [INFO] [3120/7187] bonded=59  ath_filled=56  risk_filled=57  skipped=3061  eta=511s
+2026-03-02 10:20:08,702 [INFO] [3150/7187] bonded=59  ath_filled=56  risk_filled=57  skipped=3091  eta=504s
+2026-03-02 10:20:11,263 [INFO] ATH  7C7m7HumGUm9RzkPpHhziDyDAoJb3zshxi8xdkjwpump  ath_mc=$294796  bonded_at~yes
+2026-03-02 10:20:14,789 [INFO] [3180/7187] bonded=60  ath_filled=57  risk_filled=58  skipped=3120  eta=503s
+2026-03-02 10:20:17,159 [INFO] ATH  4GHH4c2yse8jzs8EXgAUQdeGnm8FLeEdMqru45Lipump  ath_mc=$62422  bonded_at~yes
+2026-03-02 10:20:20,387 [INFO] [3210/7187] bonded=61  ath_filled=58  risk_filled=59  skipped=3149  eta=502s
+2026-03-02 10:20:21,966 [INFO] [3240/7187] bonded=61  ath_filled=58  risk_filled=59  skipped=3179  eta=495s
+2026-03-02 10:20:23,260 [INFO] [3270/7187] bonded=61  ath_filled=58  risk_filled=59  skipped=3209  eta=489s
+2026-03-02 10:20:24,560 [INFO] [3300/7187] bonded=61  ath_filled=58  risk_filled=59  skipped=3239  eta=482s
+2026-03-02 10:20:25,861 [INFO] [3330/7187] bonded=61  ath_filled=58  risk_filled=59  skipped=3269  eta=475s
+2026-03-02 10:20:27,221 [INFO] [3360/7187] bonded=61  ath_filled=58  risk_filled=59  skipped=3299  eta=469s
+2026-03-02 10:20:28,852 [INFO] [3390/7187] bonded=61  ath_filled=58  risk_filled=59  skipped=3329  eta=463s
+2026-03-02 10:20:31,187 [INFO] ATH  7iDymrePKzQiwpnN8YgTnTs9YMhJSUJMRwzMpg6Cpump  ath_mc=$220946  bonded_at~yes
+2026-03-02 10:20:34,441 [INFO] [3420/7187] bonded=62  ath_filled=59  risk_filled=60  skipped=3358  eta=462s
+2026-03-02 10:20:36,773 [INFO] ATH  BB45S1j3n2JGSu4jT51MRVJeGUh4Dv6juhRihcCtpump  ath_mc=$54532  bonded_at~yes
+2026-03-02 10:20:40,011 [INFO] [3450/7187] bonded=63  ath_filled=60  risk_filled=61  skipped=3387  eta=460s
+2026-03-02 10:20:42,397 [INFO] ATH  5Kb2Ub4mpbdnUeeA8KxEeYC5jkh7xSUpU42CHUW3pump  ath_mc=$78771  bonded_at~yes
+2026-03-02 10:20:45,656 [INFO] [3480/7187] bonded=64  ath_filled=61  risk_filled=62  skipped=3416  eta=458s
+2026-03-02 10:20:48,019 [INFO] ATH  B9xbGFQkjuRBBPus1uQZiSRJyUePcZcZefopv3ULpump  ath_mc=$80440  bonded_at~yes
+2026-03-02 10:20:51,267 [INFO] [3510/7187] bonded=65  ath_filled=62  risk_filled=63  skipped=3445  eta=457s
+2026-03-02 10:20:53,604 [INFO] ATH  5buydkGVah8KfoT9x7zaHrkmcXdgrRz9uAEGnaAhpump  ath_mc=$91485  bonded_at~yes
+2026-03-02 10:20:57,873 [INFO] ATH  3hyRhrc6aSRHQMea7DEhF7ZPXnkFHcWdJvudn8gzpump  ath_mc=$62817  bonded_at~yes
+2026-03-02 10:21:02,144 [INFO] ATH  HtAGt9iMiA9Wzup5hS9NMc4TAyovWrMffAB4CMctpump  ath_mc=$85641  bonded_at~yes
+2026-03-02 10:21:05,373 [INFO] [3540/7187] bonded=68  ath_filled=65  risk_filled=66  skipped=3472  eta=464s
+2026-03-02 10:21:06,693 [INFO] [3570/7187] bonded=68  ath_filled=65  risk_filled=66  skipped=3502  eta=457s
+2026-03-02 10:21:07,984 [INFO] [3600/7187] bonded=68  ath_filled=65  risk_filled=66  skipped=3532  eta=451s
+2026-03-02 10:21:10,317 [INFO] ATH  Fgjn58BTVGXvhwvQRRYg94g6PDp5c8aubLoDAwjMpump  ath_mc=$57743  bonded_at~yes
+2026-03-02 10:21:13,549 [INFO] [3630/7187] bonded=69  ath_filled=66  risk_filled=67  skipped=3561  eta=449s
+2026-03-02 10:21:15,888 [INFO] ATH  GG5zUYrBkUYEGdGvgkaZyBDipGzK1GomuYForNq2pump  ath_mc=$55588  bonded_at~yes
+2026-03-02 10:21:19,122 [INFO] [3660/7187] bonded=70  ath_filled=67  risk_filled=68  skipped=3590  eta=447s
+2026-03-02 10:21:20,422 [INFO] [3690/7187] bonded=70  ath_filled=67  risk_filled=68  skipped=3620  eta=441s
+2026-03-02 10:21:22,736 [INFO] ATH  H9csFPNnMLS76YbzZfHrrpHCLPQKvbENFzLGWa3ipump  ath_mc=$42454  bonded_at~yes
+2026-03-02 10:21:25,991 [INFO] [3720/7187] bonded=71  ath_filled=68  risk_filled=69  skipped=3649  eta=439s
+2026-03-02 10:21:28,313 [INFO] ATH  BPuev1mPrkRdPkgA9gvCtnL1cSvEdyTQeh8fVfT8pump  ath_mc=$48504  bonded_at~yes
+2026-03-02 10:21:31,576 [INFO] [3750/7187] bonded=72  ath_filled=69  risk_filled=70  skipped=3678  eta=436s
+2026-03-02 10:21:33,923 [INFO] ATH  3Znu21YkeQ1boBxSM2mV8JcJdu6wCeBhv6P1sC7Upump  ath_mc=$95349  bonded_at~yes
+2026-03-02 10:21:38,204 [INFO] ATH  B5Je4uUiAScbA8n9YPQRR1fQL7B2unXVDMBGX7wHpump  ath_mc=$33728  bonded_at~yes
+2026-03-02 10:21:41,446 [INFO] [3780/7187] bonded=74  ath_filled=71  risk_filled=72  skipped=3706  eta=438s
+2026-03-02 10:21:43,798 [INFO] ATH  4YYhtM4GAinAfo7tkpqzsryFBLpqsLufd5VuQk1opump  ath_mc=$46538  bonded_at~yes
+2026-03-02 10:21:47,031 [INFO] [3810/7187] bonded=75  ath_filled=72  risk_filled=73  skipped=3735  eta=436s
+2026-03-02 10:21:49,340 [INFO] ATH  84cipkRw6J6Ec5CLzWnhJ1nBs6iR3wd6F6FscPBpump  ath_mc=$71340  bonded_at~yes
+2026-03-02 10:21:52,587 [INFO] [3840/7187] bonded=76  ath_filled=73  risk_filled=74  skipped=3764  eta=433s
+2026-03-02 10:21:54,896 [INFO] ATH  DywVBz74bkZBfBNzTjttLjXWZWi4XPSsPBdYsUBrpump  ath_mc=$51638  bonded_at~yes
+2026-03-02 10:21:58,137 [INFO] [3870/7187] bonded=77  ath_filled=74  risk_filled=75  skipped=3793  eta=431s
+2026-03-02 10:22:00,461 [INFO] ATH  5YtuCLPmkQzhVgU29GB4Um77bSwF7Sc8jvK3FPo7pump  ath_mc=$36005  bonded_at~yes
+2026-03-02 10:22:03,700 [INFO] [3900/7187] bonded=78  ath_filled=75  risk_filled=76  skipped=3822  eta=428s
+2026-03-02 10:22:05,014 [INFO] [3930/7187] bonded=78  ath_filled=75  risk_filled=76  skipped=3852  eta=422s
+2026-03-02 10:22:06,333 [INFO] [3960/7187] bonded=78  ath_filled=75  risk_filled=76  skipped=3882  eta=416s
+2026-03-02 10:22:08,939 [INFO] ATH  6dmmst3obDMT8Q9MryCpG7rFYsXZw5oo9e2Cd8gEpump  ath_mc=$37688  bonded_at~yes
+2026-03-02 10:22:13,324 [INFO] ATH  AukyjhMSmN5VEGjQ9npeu6Eu9X21feL1qCbZSPeJpump  ath_mc=$928716  bonded_at~yes
+2026-03-02 10:22:16,581 [INFO] [3990/7187] bonded=80  ath_filled=77  risk_filled=78  skipped=3910  eta=418s
+2026-03-02 10:22:19,135 [INFO] ATH  5BsUQDzCz5L2S6AxVnrb6HzaMuWkZBF3HzfnL6VMpump  ath_mc=$34068  bonded_at~yes
+2026-03-02 10:22:23,425 [INFO] ATH  6NMjQUhQ4EdYtjkDdTn2by39RT2GmeEXHMHNWB57pump  ath_mc=$70829  bonded_at~yes
+2026-03-02 10:22:27,703 [INFO] ATH  GyPQxEJV7dhmwKzG7iPZo9An1pbjzUaSoWSSyuHZpump  ath_mc=$34041  bonded_at~yes
+2026-03-02 10:22:30,937 [INFO] [4020/7187] bonded=83  ath_filled=80  risk_filled=81  skipped=3937  eta=422s
+2026-03-02 10:22:33,273 [INFO] ATH  jKRA4pvZn9mJaoB8iKC9vQYGVMTjGbCfqJo2B4Wpump  ath_mc=$88573  bonded_at~yes
+2026-03-02 10:22:36,509 [INFO] [4050/7187] bonded=84  ath_filled=81  risk_filled=82  skipped=3966  eta=419s
+2026-03-02 10:22:38,836 [INFO] ATH  61GJZwoAadaR2BzYbFicMQmgjH1DbNchdadGPeXmpump  ath_mc=$98107  bonded_at~yes
+2026-03-02 10:22:43,101 [INFO] ATH  CQm5FE2dSAdxCCt159EY7eGVfu425nBTCfxjZYjXpump  ath_mc=$39026  bonded_at~yes
+2026-03-02 10:22:46,351 [INFO] [4080/7187] bonded=86  ath_filled=83  risk_filled=84  skipped=3994  eta=420s
+2026-03-02 10:22:48,729 [INFO] ATH  9EHBaaATRdu8ce63H4YsAEVsagLs1qC4AqeJDNxFpump  ath_mc=$47534  bonded_at~yes
+2026-03-02 10:22:51,976 [INFO] [4110/7187] bonded=87  ath_filled=84  risk_filled=85  skipped=4023  eta=417s
+2026-03-02 10:22:53,283 [INFO] [4140/7187] bonded=87  ath_filled=84  risk_filled=85  skipped=4053  eta=411s
+2026-03-02 10:22:55,563 [INFO] ATH  5NatSQM1p1rKEUCdxKYchw9QbSNXLprWEip1UQ1bpump  ath_mc=$38294  bonded_at~yes
+2026-03-02 10:22:59,823 [INFO] ATH  HCBeRXY2X3UVd76BTg63ntBQuTeSi8HMqm5RMHbHpump  ath_mc=$89038  bonded_at~yes
+2026-03-02 10:23:03,085 [INFO] [4170/7187] bonded=89  ath_filled=86  risk_filled=87  skipped=4081  eta=411s
+2026-03-02 10:23:05,408 [INFO] ATH  2aRuE9d5Z5tidfceC2DisB14o73wptop93exJeoYpump  ath_mc=$95931  bonded_at~yes
+2026-03-02 10:23:08,650 [INFO] [4200/7187] bonded=90  ath_filled=87  risk_filled=88  skipped=4110  eta=408s
+2026-03-02 10:23:11,014 [INFO] ATH  9uKcd2WsQbmBXGchCZs2mBF2bNZkxZDGN1Qs8BtNpump  ath_mc=$59492  bonded_at~yes
+2026-03-02 10:23:14,264 [INFO] [4230/7187] bonded=91  ath_filled=88  risk_filled=89  skipped=4139  eta=405s
+2026-03-02 10:23:16,601 [INFO] ATH  sQrwnMCfKfndVnuYg2dHHPLHEhn3SbSKRy2JFM8pump  ath_mc=$35842  bonded_at~yes
+2026-03-02 10:23:20,862 [INFO] ATH  E862guHq2A7QZ33MzFYrTLKzJWCaCKRUzhxWUZ38pump  ath_mc=$35157  bonded_at~yes
+2026-03-02 10:23:24,106 [INFO] [4260/7187] bonded=93  ath_filled=90  risk_filled=91  skipped=4167  eta=405s
+2026-03-02 10:23:25,455 [INFO] [4290/7187] bonded=93  ath_filled=90  risk_filled=91  skipped=4197  eta=398s
+2026-03-02 10:23:26,778 [INFO] [4320/7187] bonded=93  ath_filled=90  risk_filled=91  skipped=4227  eta=392s
+2026-03-02 10:23:29,115 [INFO] ATH  CYkxTNPPEXrCRSKE3r8pzP1NeGFRMXhkyzTyDLmpump  ath_mc=$90477  bonded_at~yes
+2026-03-02 10:23:33,363 [INFO] ATH  2J8ciWqc3fhhFau1bf5N9dJKpxpZhG8X9mvqFvCDpump  ath_mc=$43965  bonded_at~yes
+2026-03-02 10:23:37,612 [INFO] ATH  4op2KEnWyUcxqXfoShmtffsqkueKAomGuoKaDHxkpump  ath_mc=$70974  bonded_at~yes
+2026-03-02 10:23:40,883 [INFO] [4350/7187] bonded=96  ath_filled=93  risk_filled=94  skipped=4254  eta=395s
+2026-03-02 10:23:43,210 [INFO] ATH  GRhmwfJbbUsj8WrBWen4CM1d5pQ65BGPDkrxofeZpump  ath_mc=$34598  bonded_at~yes
+2026-03-02 10:23:47,466 [INFO] ATH  698KwAbZrmQdMVLjYvREXoeCXpnZQbGcxq8jUozpump  ath_mc=$34045  bonded_at~yes
+2026-03-02 10:23:50,713 [INFO] [4380/7187] bonded=98  ath_filled=95  risk_filled=96  skipped=4282  eta=394s
+2026-03-02 10:23:53,036 [INFO] ATH  5Rd9FhrqXz1G3oToDVCYLMmjKmihUpNQ6cym5ru1pump  ath_mc=$64432  bonded_at~yes
+2026-03-02 10:23:57,294 [INFO] ATH  3FxQ5NNTdXY9JMQ1uS2EHnuPqWhH4joT254sniLepump  ath_mc=$40065  bonded_at~yes
+2026-03-02 10:24:01,560 [INFO] ATH  hqKUw6BhUp2e5d8V7fybipKWfzmzDwshouRkR8xpump  ath_mc=$34680  bonded_at~yes
+2026-03-02 10:24:04,813 [INFO] [4410/7187] bonded=101  ath_filled=98  risk_filled=99  skipped=4309  eta=396s
+2026-03-02 10:24:06,141 [INFO] [4440/7187] bonded=101  ath_filled=98  risk_filled=99  skipped=4339  eta=390s
+2026-03-02 10:24:08,450 [INFO] ATH  5tHZPGDSjU2iWLrBbHZFeCrwaEoqQAyye7VG5KqWpump  ath_mc=$217018  bonded_at~yes
+2026-03-02 10:24:11,695 [INFO] [4470/7187] bonded=102  ath_filled=99  risk_filled=100  skipped=4368  eta=387s
+2026-03-02 10:24:14,021 [INFO] ATH  9EMfdDK2nbXcqAioEoZvKhTjrmHnT2esvwi2wtmnpump  ath_mc=$168879  bonded_at~yes
+2026-03-02 10:24:18,279 [INFO] ATH  2VMUqRbkWaiSjrkkkgtZthjHEGnPGmKifPW5VHbGpump  ath_mc=$44150  bonded_at~yes
+2026-03-02 10:24:22,587 [INFO] ATH  8UjNDBDWMZUJNQmUGoBNyFWva9EjT3MsXTDUUp9mpump  ath_mc=$37925  bonded_at~yes
+2026-03-02 10:24:25,839 [INFO] [4500/7187] bonded=105  ath_filled=102  risk_filled=103  skipped=4395  eta=388s
+2026-03-02 10:24:27,135 [INFO] [4530/7187] bonded=105  ath_filled=102  risk_filled=103  skipped=4425  eta=382s
+2026-03-02 10:24:29,433 [INFO] ATH  ES4ovpz3hRaWtrDtmWeW6Qmn14fM9rb48Ndof7Bipump  ath_mc=$34244  bonded_at~yes
+2026-03-02 10:24:33,716 [INFO] ATH  AMFjuZhud82umZmhxzJszMZNbr69eBZFwWmiGaLRsvxV  ath_mc=$45108  bonded_at~yes
+2026-03-02 10:24:38,000 [INFO] ATH  buHXWqzF1UhqaUM9rB2aWbsYWrJJ8eWeLmytdjZpump  ath_mc=$57002  bonded_at~yes
+2026-03-02 10:24:41,245 [INFO] [4560/7187] bonded=108  ath_filled=105  risk_filled=106  skipped=4452  eta=384s
+2026-03-02 10:24:43,589 [INFO] ATH  73K3sT8kg91By98Z76M1MgbG7wUHDeRtVsk2HuPWpump  ath_mc=$47354  bonded_at~yes
+2026-03-02 10:24:46,824 [INFO] [4590/7187] bonded=109  ath_filled=106  risk_filled=107  skipped=4481  eta=380s
+2026-03-02 10:24:48,168 [INFO] [4620/7187] bonded=109  ath_filled=106  risk_filled=107  skipped=4511  eta=374s
+2026-03-02 10:24:50,493 [INFO] ATH  Av8WewmDjFiojuhkXQ6uoMrcj5cAp7gmr4tiHDSMpump  ath_mc=$38485  bonded_at~yes
+2026-03-02 10:24:54,785 [INFO] ATH  HuizJtx758s4Lf9ZPEE49o6kdD8nZYeBoSVogVwupump  ath_mc=$56958  bonded_at~yes
+2026-03-02 10:24:58,026 [INFO] [4650/7187] bonded=111  ath_filled=108  risk_filled=109  skipped=4539  eta=372s
+2026-03-02 10:25:00,562 [INFO] ATH  Cgs1sXyVseXgz5DsxxvCbigEPpgV9gdg8QosSn8Upump  ath_mc=$57055  bonded_at~yes
+2026-03-02 10:25:04,814 [INFO] ATH  4zrVdwVGJ58RxG7U1od1CndjVVpZ5c3NjdVH3umzpump  ath_mc=$49855  bonded_at~yes
+2026-03-02 10:25:07,957 [INFO] [4680/7187] bonded=113  ath_filled=110  risk_filled=110  skipped=4567  eta=371s
+2026-03-02 10:25:17,420 [INFO] [4710/7187] bonded=115  ath_filled=110  risk_filled=110  skipped=4595  eta=369s
+2026-03-02 10:25:18,708 [INFO] [4740/7187] bonded=115  ath_filled=110  risk_filled=110  skipped=4625  eta=363s
+2026-03-02 10:25:21,021 [INFO] ATH  8xuP2T3mF6wnhn7ewfkMr2yiGXzYuBb2tkyjpZZTpump  ath_mc=$45660  bonded_at~yes
+2026-03-02 10:25:24,280 [INFO] [4770/7187] bonded=116  ath_filled=111  risk_filled=111  skipped=4654  eta=359s
+2026-03-02 10:25:26,606 [INFO] ATH  34kdiXZDyLtQfbRg1M8z5HuH8T19LTTMgdwiv3tTpump  ath_mc=$37782  bonded_at~yes
+2026-03-02 10:25:30,861 [INFO] ATH  AbvKrAwQGtWFtEnzaXau8hrAe8ZrJg5KGoPCynuApump  ath_mc=$56961  bonded_at~yes
+2026-03-02 10:25:34,113 [INFO] [4800/7187] bonded=118  ath_filled=113  risk_filled=113  skipped=4682  eta=357s
+2026-03-02 10:25:36,511 [INFO] ATH  6KijCcbr77or3QVjJX22tCnmCSDRHFkmQ6rCiYaDWSqX  ath_mc=$31589  bonded_at~yes
+2026-03-02 10:25:40,740 [INFO] ATH  4TcgfZpp6w7Ty445KwN61rLtyofx6WRiFByym7pDpump  ath_mc=$150666  bonded_at~yes
+2026-03-02 10:25:43,992 [INFO] [4830/7187] bonded=120  ath_filled=115  risk_filled=115  skipped=4710  eta=356s
+2026-03-02 10:25:45,282 [INFO] [4860/7187] bonded=120  ath_filled=115  risk_filled=115  skipped=4740  eta=349s
+2026-03-02 10:25:46,591 [INFO] [4890/7187] bonded=120  ath_filled=115  risk_filled=115  skipped=4770  eta=343s
+2026-03-02 10:25:48,918 [INFO] ATH  9ud4BZYGRUGDUmux5DP7om2CRg1aPS7BDg9TRb8Dpump  ath_mc=$37061  bonded_at~yes
+2026-03-02 10:25:53,170 [INFO] ATH  3dW4qQHg4BQQdGjiwXjyaNwrkEwBfGPDvdwjW5NSpump  ath_mc=$34585  bonded_at~yes
+2026-03-02 10:25:57,478 [INFO] ATH  Ly4ydrT3sMxUwNnjMrSBjHXhcnzgZSZUYK5QkAdZ1GT  ath_mc=$45654  bonded_at~yes
+2026-03-02 10:26:00,722 [INFO] [4920/7187] bonded=123  ath_filled=118  risk_filled=118  skipped=4797  eta=343s
+2026-03-02 10:26:03,087 [INFO] ATH  6mQNDnqhYpeP4ETMWk2KPhiw78oB4kYVSDPyqFgapump  ath_mc=$53296  bonded_at~yes
+2026-03-02 10:26:06,327 [INFO] [4950/7187] bonded=124  ath_filled=119  risk_filled=119  skipped=4826  eta=339s
+2026-03-02 10:26:08,675 [INFO] ATH  FCcNHQb1UyGxPTkZQueaTLNvdqRKq7zH7feoA2TKpump  ath_mc=$86062  bonded_at~yes
+2026-03-02 10:26:11,908 [INFO] [4980/7187] bonded=125  ath_filled=120  risk_filled=120  skipped=4855  eta=335s
+2026-03-02 10:26:13,205 [INFO] [5010/7187] bonded=125  ath_filled=120  risk_filled=120  skipped=4885  eta=329s
+2026-03-02 10:26:15,531 [INFO] ATH  3AY3DAQZDkpivFc989boovkNfkitmht1EjfbmJPWpump  ath_mc=$43920  bonded_at~yes
+2026-03-02 10:26:19,786 [INFO] ATH  4QEkapanYMEyre5cNWfyPpXxLjr8fnUTHhCa15eXpump  ath_mc=$61385  bonded_at~yes
+2026-03-02 10:26:23,015 [INFO] [5040/7187] bonded=127  ath_filled=122  risk_filled=122  skipped=4913  eta=327s
+2026-03-02 10:26:25,335 [INFO] ATH  8QFZET4KSR2NFgv2kAPSANvAEEfJiVGTmSkxSNJ7pump  ath_mc=$35052  bonded_at~yes
+2026-03-02 10:26:28,572 [INFO] [5070/7187] bonded=128  ath_filled=123  risk_filled=123  skipped=4942  eta=323s
+2026-03-02 10:26:30,875 [INFO] ATH  9CaDXpmVuVXaGWX9LNLA8pQwd8vG2o5pHzfMDdeEpump  ath_mc=$206803  bonded_at~yes
+2026-03-02 10:26:35,151 [INFO] ATH  6M49SaGDrDDFHXD2FGrJ8gHkn9kNY9V2LknTAgb5pump  ath_mc=$41406  bonded_at~yes
+2026-03-02 10:26:38,385 [INFO] [5100/7187] bonded=130  ath_filled=125  risk_filled=125  skipped=4970  eta=320s
+2026-03-02 10:26:39,692 [INFO] [5130/7187] bonded=130  ath_filled=125  risk_filled=125  skipped=5000  eta=314s
+2026-03-02 10:26:41,002 [INFO] [5160/7187] bonded=130  ath_filled=125  risk_filled=125  skipped=5030  eta=309s
+2026-03-02 10:26:43,287 [INFO] ATH  6CZ9nrgyroZ8KBBZYM1tW5rc7APTPKr9GkJMfRvApump  ath_mc=$175746  bonded_at~yes
+2026-03-02 10:26:46,541 [INFO] [5190/7187] bonded=131  ath_filled=126  risk_filled=126  skipped=5059  eta=304s
+2026-03-02 10:26:47,852 [INFO] [5220/7187] bonded=131  ath_filled=126  risk_filled=126  skipped=5089  eta=299s
+2026-03-02 10:26:50,163 [INFO] ATH  3yLDUWFYG5cEwofHsLRP3XkVCGCa65g6C1pbNuX1pump  ath_mc=$70408  bonded_at~yes
+2026-03-02 10:26:54,418 [INFO] ATH  DLqBdwsh8Zi1DN8tqdfWMpa7UnuPMErzGihHqhWspump  ath_mc=$71136  bonded_at~yes
+2026-03-02 10:26:57,664 [INFO] [5250/7187] bonded=133  ath_filled=128  risk_filled=128  skipped=5117  eta=296s
+2026-03-02 10:27:00,000 [INFO] ATH  3jcA4CaQiJC8UEW2asMKFUiwz7THGWWjdD6Wy42mpump  ath_mc=$35610  bonded_at~yes
+2026-03-02 10:27:04,335 [INFO] ATH  4bKcMo3vaZZS1Cmp58zezdZbVo2MSvew83pDLumdpump  ath_mc=$49580  bonded_at~yes
+2026-03-02 10:27:07,569 [INFO] [5280/7187] bonded=135  ath_filled=130  risk_filled=130  skipped=5145  eta=293s
+2026-03-02 10:27:08,893 [INFO] [5310/7187] bonded=135  ath_filled=130  risk_filled=130  skipped=5175  eta=288s
+2026-03-02 10:27:11,239 [INFO] ATH  5aYwzEaYrhzjJtFqnWCHSuuw9DhQPWLyfJR7JyCCpump  ath_mc=$34640  bonded_at~yes
+2026-03-02 10:27:14,490 [INFO] [5340/7187] bonded=136  ath_filled=131  risk_filled=131  skipped=5204  eta=283s
+2026-03-02 10:27:16,809 [INFO] ATH  HszVUbi9ZB36mXgsyLchQtQBCuecycqaT7G2e9BCpump  ath_mc=$100001  bonded_at~yes
+2026-03-02 10:27:20,071 [INFO] [5370/7187] bonded=137  ath_filled=132  risk_filled=132  skipped=5233  eta=279s
+2026-03-02 10:27:22,439 [INFO] ATH  ahEhK5PHyNvVLMhqkVkg6SyJ44f3ezvMbMEN6hqpump  ath_mc=$104554  bonded_at~yes
+2026-03-02 10:27:25,689 [INFO] [5400/7187] bonded=138  ath_filled=133  risk_filled=133  skipped=5262  eta=275s
+2026-03-02 10:27:28,021 [INFO] ATH  E7iqowHNcJJrBDcHQtEV4yL3EAJkrRbBoowNhmGipump  ath_mc=$47095  bonded_at~yes
+2026-03-02 10:27:31,267 [INFO] [5430/7187] bonded=139  ath_filled=134  risk_filled=134  skipped=5291  eta=270s
+2026-03-02 10:27:32,607 [INFO] [5460/7187] bonded=139  ath_filled=134  risk_filled=134  skipped=5321  eta=265s
+2026-03-02 10:27:33,916 [INFO] [5490/7187] bonded=139  ath_filled=134  risk_filled=134  skipped=5351  eta=259s
+2026-03-02 10:27:36,317 [INFO] ATH  5hTpWv7SrtJsSwo38rYzDH6G5sQnzxZt1FF4pHA8TkJY  ath_mc=$35901  bonded_at~yes
+2026-03-02 10:27:39,563 [INFO] [5520/7187] bonded=140  ath_filled=135  risk_filled=135  skipped=5380  eta=255s
+2026-03-02 10:27:42,142 [INFO] ATH  9Aq4NGQVnbXRk54oBHMbUUVYf5CAmS8sBp6gN2mcpump  ath_mc=$79277  bonded_at~yes
+2026-03-02 10:27:45,369 [INFO] [5550/7187] bonded=141  ath_filled=136  risk_filled=136  skipped=5409  eta=251s
+2026-03-02 10:27:47,950 [INFO] ATH  Gkri5AAGQpvfd2Soz86MFzf9adv9PsuLadFLwsYgpump  ath_mc=$96270  bonded_at~yes
+2026-03-02 10:27:51,187 [INFO] [5580/7187] bonded=142  ath_filled=137  risk_filled=137  skipped=5438  eta=246s
+2026-03-02 10:27:53,488 [INFO] ATH  C3qHd4sorFAzTeeJdXcBVfK7Mfmbc6uT54xx4fkJpump  ath_mc=$34647  bonded_at~yes
+2026-03-02 10:27:56,738 [INFO] [5610/7187] bonded=143  ath_filled=138  risk_filled=138  skipped=5467  eta=242s
+2026-03-02 10:27:59,091 [INFO] ATH  92T7FvngxNuxBd9uu8xPTmTf1WpA45etFUf9uR5Upump  ath_mc=$172776  bonded_at~yes
+2026-03-02 10:28:02,329 [INFO] [5640/7187] bonded=144  ath_filled=139  risk_filled=139  skipped=5496  eta=238s
+2026-03-02 10:28:04,652 [INFO] ATH  DcQXqGYWuqBJevSBP81sGXzrLKEUkVeW8E4mxwyypump  ath_mc=$127215  bonded_at~yes
+2026-03-02 10:28:08,926 [INFO] ATH  ZQ9kPuSFQUofaXVeeZWzK27DxBBEtBhF4tbrds9pump  ath_mc=$63394  bonded_at~yes
+2026-03-02 10:28:13,178 [INFO] ATH  8dtDguxsgiTVkE2rLK4QvypLM2EuZ4HX1Y6UfyXspump  ath_mc=$183237  bonded_at~yes
+2026-03-02 10:28:16,425 [INFO] [5670/7187] bonded=147  ath_filled=142  risk_filled=142  skipped=5523  eta=236s
+2026-03-02 10:28:18,754 [INFO] ATH  2G7jF3tT1eVXPVYA5kqRNzDVcYyhDvEZrpW5id5upump  ath_mc=$53471  bonded_at~yes
+2026-03-02 10:28:23,045 [INFO] ATH  DAePQvpTNmnLpXEU6xntYaE5BsphAb5EkFzewJaupump  ath_mc=$63660  bonded_at~yes
+2026-03-02 10:28:26,271 [INFO] [5700/7187] bonded=149  ath_filled=144  risk_filled=144  skipped=5551  eta=232s
+2026-03-02 10:28:27,562 [INFO] [5730/7187] bonded=149  ath_filled=144  risk_filled=144  skipped=5581  eta=227s
+2026-03-02 10:28:29,892 [INFO] ATH  BGREbP6VHaMWt7AEd8m8LhUkhyfwo4Yk1MgK5eMipump  ath_mc=$101282  bonded_at~yes
+2026-03-02 10:28:33,132 [INFO] [5760/7187] bonded=150  ath_filled=145  risk_filled=145  skipped=5610  eta=222s
+2026-03-02 10:28:35,518 [INFO] ATH  Bxu7bdRkYXKirKJ3dmbaL3AwJ3v6et8A8Xcduooxpump  ath_mc=$63748  bonded_at~yes
+2026-03-02 10:28:39,755 [INFO] ATH  B84v7N5ECx6Zx5GFGfjkjgAX9zgLbAxHX5PScXeDpump  ath_mc=$73706  bonded_at~yes
+2026-03-02 10:28:42,998 [INFO] [5790/7187] bonded=152  ath_filled=147  risk_filled=147  skipped=5638  eta=219s
+2026-03-02 10:28:44,496 [INFO] [5820/7187] bonded=152  ath_filled=147  risk_filled=147  skipped=5668  eta=214s
+2026-03-02 10:28:46,818 [INFO] ATH  DD4e2veNYjjmVBAZ59DyyfUfjXfLh4nkeFedjvnypump  ath_mc=$149330  bonded_at~yes
+2026-03-02 10:28:50,067 [INFO] [5850/7187] bonded=153  ath_filled=148  risk_filled=148  skipped=5697  eta=209s
+2026-03-02 10:28:51,362 [INFO] [5880/7187] bonded=153  ath_filled=148  risk_filled=148  skipped=5727  eta=204s
+2026-03-02 10:28:52,676 [INFO] [5910/7187] bonded=153  ath_filled=148  risk_filled=148  skipped=5757  eta=198s
+2026-03-02 10:28:54,239 [INFO] [5940/7187] bonded=153  ath_filled=148  risk_filled=148  skipped=5787  eta=193s
+2026-03-02 10:28:56,575 [INFO] ATH  98AmBMcSue9K5nocH5WpWuNgrPxEpV2aMdWgcmmFpump  ath_mc=$43748  bonded_at~yes
+2026-03-02 10:29:00,834 [INFO] ATH  BorBvxBN9oDk232U6WQvUwkyxoxBCcJsBkQg1iWbpump  ath_mc=$428213  bonded_at~yes
+2026-03-02 10:29:05,087 [INFO] ATH  ETSUJJ9CL3c93q2pRnREtRBSQLUHcKkETxbpHfqepump  ath_mc=$539826  bonded_at~yes
+2026-03-02 10:29:09,328 [INFO] ATH  D5bT985CRTSFWwfDE4zQGLS4YjJs5NoUonS9ySohpump  ath_mc=$76848  bonded_at~yes
+2026-03-02 10:29:12,561 [INFO] [5970/7187] bonded=157  ath_filled=152  risk_filled=152  skipped=5813  eta=191s
+2026-03-02 10:29:13,946 [INFO] [6000/7187] bonded=157  ath_filled=152  risk_filled=152  skipped=5843  eta=186s
+2026-03-02 10:29:16,235 [INFO] ATH  DhnwefkAh46Dg5UswLHqtimyhQuJKMoURXKLU7jopump  ath_mc=$38947  bonded_at~yes
+2026-03-02 10:29:19,462 [INFO] [6030/7187] bonded=158  ath_filled=153  risk_filled=153  skipped=5872  eta=181s
+2026-03-02 10:29:21,981 [INFO] ATH  5446sW7E8jCzLXnT9npZNfDwBnQugVc3XdfEbqPBpump  ath_mc=$282368  bonded_at~yes
+2026-03-02 10:29:25,254 [INFO] [6060/7187] bonded=159  ath_filled=154  risk_filled=154  skipped=5901  eta=177s
+2026-03-02 10:29:26,558 [INFO] [6090/7187] bonded=159  ath_filled=154  risk_filled=154  skipped=5931  eta=171s
+2026-03-02 10:29:28,895 [INFO] ATH  8h8zyjKMh2C2jwD8hgKW52crPwphQKqvmj6ymB5kpump  ath_mc=$33032  bonded_at~yes
+2026-03-02 10:29:32,143 [INFO] [6120/7187] bonded=160  ath_filled=155  risk_filled=155  skipped=5960  eta=167s
+2026-03-02 10:29:33,458 [INFO] [6150/7187] bonded=160  ath_filled=155  risk_filled=155  skipped=5990  eta=162s
+2026-03-02 10:29:35,795 [INFO] ATH  HXKkk7XnzfsUeWAZhugv2M8bNryyZ2RKWmZWN221pump  ath_mc=$55480  bonded_at~yes
+2026-03-02 10:29:39,027 [INFO] [6180/7187] bonded=161  ath_filled=156  risk_filled=156  skipped=6019  eta=157s
+2026-03-02 10:29:41,356 [INFO] ATH  8WK3voTRPV7QJBDn2YkJHKtATbRNtVUXgomxzv8ppump  ath_mc=$67877  bonded_at~yes
+2026-03-02 10:29:44,881 [INFO] [6210/7187] bonded=162  ath_filled=157  risk_filled=157  skipped=6048  eta=153s
+2026-03-02 10:29:47,217 [INFO] ATH  HB1bqSLDmQunAWQZJvSGA9NsBdEe1NczA6n4sRuFpump  ath_mc=$349019  bonded_at~yes
+2026-03-02 10:29:50,533 [INFO] [6240/7187] bonded=163  ath_filled=158  risk_filled=158  skipped=6077  eta=148s
+2026-03-02 10:29:52,872 [INFO] ATH  4TzzzEPbq8w7bS6BZ6txKUvMDKCKdJ5dVNKtdtiXpump  ath_mc=$179037  bonded_at~yes
+2026-03-02 10:29:56,110 [INFO] [6270/7187] bonded=164  ath_filled=159  risk_filled=159  skipped=6106  eta=143s
+2026-03-02 10:29:58,470 [INFO] ATH  HtDhQ6omt87vo6d6q6Cb9PoioBQqaUdCdPbpjaVApump  ath_mc=$121995  bonded_at~yes
+2026-03-02 10:30:01,739 [INFO] [6300/7187] bonded=165  ath_filled=160  risk_filled=160  skipped=6135  eta=139s
+2026-03-02 10:30:04,040 [INFO] ATH  28r2xKgHoQkvNBWzBmFwSFjqGZTaCCHkSX4uWuDspump  ath_mc=$54060  bonded_at~yes
+2026-03-02 10:30:07,278 [INFO] [6330/7187] bonded=166  ath_filled=161  risk_filled=161  skipped=6164  eta=134s
+2026-03-02 10:30:08,572 [INFO] [6360/7187] bonded=166  ath_filled=161  risk_filled=161  skipped=6194  eta=129s
+2026-03-02 10:30:09,884 [INFO] [6390/7187] bonded=166  ath_filled=161  risk_filled=161  skipped=6224  eta=124s
+2026-03-02 10:30:12,375 [INFO] ATH  Hu3MWuabvyBkxPLnaihDaHmUTJ3Xq64Lm1qwxzvgpump  ath_mc=$88265  bonded_at~yes
+2026-03-02 10:30:15,605 [INFO] [6420/7187] bonded=167  ath_filled=162  risk_filled=162  skipped=6253  eta=119s
+2026-03-02 10:30:17,926 [INFO] ATH  2C1DuPbhtiFDeK8zGx3LZJNLRYpuQAeYQ4XoYHy4pump  ath_mc=$34317  bonded_at~yes
+2026-03-02 10:30:21,170 [INFO] [6450/7187] bonded=168  ath_filled=163  risk_filled=163  skipped=6282  eta=115s
+2026-03-02 10:30:23,516 [INFO] ATH  2oGDe9FKpXeceCyF5jqUHACSvvyoXvBrshDjKkqnpump  ath_mc=$45074  bonded_at~yes
+2026-03-02 10:30:26,754 [INFO] [6480/7187] bonded=169  ath_filled=164  risk_filled=164  skipped=6311  eta=110s
+2026-03-02 10:30:29,078 [INFO] ATH  Cou5yGQHK3w3iScEmieVP1DkftMdX47ypYYkhj1spump  ath_mc=$148641  bonded_at~yes
+2026-03-02 10:30:33,318 [INFO] ATH  GsrfDwuPYy9ktHGh6GYnMhBA8gseHiM5J6MAP9FApump  ath_mc=$62928  bonded_at~yes
+2026-03-02 10:30:36,551 [INFO] [6510/7187] bonded=171  ath_filled=166  risk_filled=166  skipped=6339  eta=106s
+2026-03-02 10:30:42,001 [INFO] [6540/7187] bonded=172  ath_filled=166  risk_filled=167  skipped=6368  eta=102s
+2026-03-02 10:30:43,333 [INFO] [6570/7187] bonded=172  ath_filled=166  risk_filled=167  skipped=6398  eta=97s
+2026-03-02 10:30:44,628 [INFO] [6600/7187] bonded=172  ath_filled=166  risk_filled=167  skipped=6428  eta=92s
+2026-03-02 10:30:46,976 [INFO] ATH  919eKx5uDHnSW9uUuYZtdTBpAbUYuMH6DSdtF54Npump  ath_mc=$37930  bonded_at~yes
+2026-03-02 10:30:51,236 [INFO] ATH  GUvbz5xqjvYrgjHqVgd68WjyV2qt3yuS9H7hQgFHxSbz  ath_mc=$54184  bonded_at~yes
+2026-03-02 10:30:55,507 [INFO] ATH  5s22awHZm21LWSUww26mK9D81Y7zD12Gtne6ufHRpump  ath_mc=$138363  bonded_at~yes
+2026-03-02 10:30:58,756 [INFO] [6630/7187] bonded=175  ath_filled=169  risk_filled=170  skipped=6455  eta=88s
+2026-03-02 10:31:01,098 [INFO] ATH  9b13oytWPF82fBdERrUGBK1udrCopCgYqyELiUaapump  ath_mc=$38915  bonded_at~yes
+2026-03-02 10:31:04,329 [INFO] [6660/7187] bonded=176  ath_filled=170  risk_filled=171  skipped=6484  eta=83s
+2026-03-02 10:31:06,626 [INFO] ATH  5VAwkGouBRzrBeYt4wCFDjoT5rAEwsqZJoBRSq2Lpump  ath_mc=$120673  bonded_at~yes
+2026-03-02 10:31:09,863 [INFO] [6690/7187] bonded=177  ath_filled=171  risk_filled=172  skipped=6513  eta=78s
+2026-03-02 10:31:11,391 [INFO] [6720/7187] bonded=177  ath_filled=171  risk_filled=172  skipped=6543  eta=73s
+2026-03-02 10:31:12,706 [INFO] [6750/7187] bonded=177  ath_filled=171  risk_filled=172  skipped=6573  eta=68s
+2026-03-02 10:31:13,995 [INFO] [6780/7187] bonded=177  ath_filled=171  risk_filled=172  skipped=6603  eta=64s
+2026-03-02 10:31:16,335 [INFO] ATH  5J9uDsQVx53CVLyRZE4D4MK3tBcstNfqZ6j6eMVGpump  ath_mc=$41546  bonded_at~yes
+2026-03-02 10:31:19,564 [INFO] [6810/7187] bonded=178  ath_filled=172  risk_filled=173  skipped=6632  eta=59s
+2026-03-02 10:31:20,867 [INFO] [6840/7187] bonded=178  ath_filled=172  risk_filled=173  skipped=6662  eta=54s
+2026-03-02 10:31:23,171 [INFO] ATH  7oUBCHTjRvCTpBCDS4DpigJWF6yFfi8MKFnQmrEPpump  ath_mc=$34237  bonded_at~yes
+2026-03-02 10:31:26,413 [INFO] [6870/7187] bonded=179  ath_filled=173  risk_filled=174  skipped=6691  eta=49s
+2026-03-02 10:31:28,743 [INFO] ATH  eDZ1BaSBSu3JU8F9tgWY9sj7k1vZ21NMWLTJScUpump  ath_mc=$39431  bonded_at~yes
+2026-03-02 10:31:31,989 [INFO] [6900/7187] bonded=180  ath_filled=174  risk_filled=175  skipped=6720  eta=45s
+2026-03-02 10:31:33,278 [INFO] [6930/7187] bonded=180  ath_filled=174  risk_filled=175  skipped=6750  eta=40s
+2026-03-02 10:31:35,557 [INFO] ATH  8xmSTtyXgUAiqiitmLQnXee6XbQNCMh7dTZ561PYpump  ath_mc=$82899  bonded_at~yes
+2026-03-02 10:31:38,796 [INFO] [6960/7187] bonded=181  ath_filled=175  risk_filled=176  skipped=6779  eta=35s
+2026-03-02 10:31:41,127 [INFO] ATH  sjjNK9pbt2G3oeJC26HRcU3PXskd5CxyhsaQ2PDpump  ath_mc=$57398  bonded_at~yes
+2026-03-02 10:31:44,392 [INFO] [6990/7187] bonded=182  ath_filled=176  risk_filled=177  skipped=6808  eta=31s
+2026-03-02 10:31:46,726 [INFO] ATH  9xrDF4gaDJVonB5kvununEQcnXyK27egiEPKxCHHpump  ath_mc=$34157  bonded_at~yes
+2026-03-02 10:31:49,962 [INFO] [7020/7187] bonded=183  ath_filled=177  risk_filled=178  skipped=6837  eta=26s
+2026-03-02 10:31:52,292 [INFO] ATH  8gHCEc42ufpRWFD689sZXxVBxjfqrkCzRBMScsEZpump  ath_mc=$88127  bonded_at~yes
+2026-03-02 10:31:56,554 [INFO] ATH  ECwBKi9MmdwNr8i6ky2Jv6Rn8Et6GSUY9nAuZi2Gpump  ath_mc=$49293  bonded_at~yes
+2026-03-02 10:31:59,799 [INFO] [7050/7187] bonded=185  ath_filled=179  risk_filled=180  skipped=6865  eta=21s
+2026-03-02 10:32:01,368 [INFO] [7080/7187] bonded=185  ath_filled=179  risk_filled=180  skipped=6895  eta=17s
+2026-03-02 10:32:03,768 [INFO] ATH  384rZqTFaiVMshzckCznx2AUBUsxJdL4aF1y4B29pump  ath_mc=$38323  bonded_at~yes
+2026-03-02 10:32:07,036 [INFO] [7110/7187] bonded=186  ath_filled=180  risk_filled=181  skipped=6924  eta=12s
+2026-03-02 10:32:09,344 [INFO] ATH  E1jqth7k6yWhrUnpAmKVWeFz4T37WSVkm2MuUKgppump  ath_mc=$679438  bonded_at~yes
+2026-03-02 10:32:13,608 [INFO] ATH  5r29DJ3sDxbMtv81A2gv2XQP1HQZYKzqQ27cEVFLpump  ath_mc=$34240  bonded_at~yes
+2026-03-02 10:32:16,867 [INFO] [7140/7187] bonded=188  ath_filled=182  risk_filled=183  skipped=6952  eta=7s
+2026-03-02 10:32:19,196 [INFO] ATH  DitThhdQaFThHFMyTzbbGvoRZi38RZp9yYVgd7eApump  ath_mc=$40149  bonded_at~yes
+2026-03-02 10:32:22,437 [INFO] [7170/7187] bonded=189  ath_filled=183  risk_filled=184  skipped=6981  eta=3s
+2026-03-02 10:32:24,776 [INFO] ATH  ATBR4i19gcQ31Rfr7ymA2XvkCQEAkNFGBtVKTmdqpump  ath_mc=$247694  bonded_at~yes
+2026-03-02 10:32:28,037 [INFO] [7187/7187] bonded=190  ath_filled=184  risk_filled=185  skipped=6997  eta=0s
+2026-03-02 10:32:28,039 [INFO] Done. bonded=190  ath_filled=184  risk_filled=185  skipped=6997
