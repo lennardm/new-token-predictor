@@ -68,6 +68,38 @@ The key question for step 2: at what prediction confidence does the signal becom
 - `market_snapshots` dedup uses `CREATE UNIQUE INDEX ON market_snapshots(CAST(ts / 300 AS INTEGER))` — SQLite does not support expressions in inline `UNIQUE` constraints
 - Schema migrations handled by `_migrate()` in `db.py` — uses `PRAGMA table_info` to detect and `ALTER TABLE ADD COLUMN` for any missing columns; safe to run against existing DBs
 
+## analyzer.py
+
+Versioned with a human-readable changelog at the top of the file (`__version__`, `__date__`, printed on startup). Version history:
+
+| Version | Date | Changes |
+|---------|------|---------|
+| v1.0 | 2025-02-28 | Initial — trade features, RugCheck risk, CryptoPanic social, basic targets |
+| v1.1 | 2025-03-01 | SQL rewrite of `load_trades_features`; ST risk columns; `reached_20k/50k/100k/1m` targets; `RandomForestClassifier` for binary targets; `is_mayhem_mode`, `initial_market_cap_sol`, `hour_of_day` features |
+| v1.2 | 2025-03-07 | Pairwise dropna in correlation analysis (was always empty); `XGBClassifier` for binary targets (was producing NaN); `log1p` transform for market cap regression targets; median imputation so all tokens are used instead of being dropped for missing ST columns |
+
+### Features used
+
+**Trade features** (from `trades` + `tokens`, SQL GROUP BY): buy/sell counts and volumes, time-bucketed volumes (1min/5min/20min), unique buyers/sellers, price velocity (linear slope), max drawdown, top-5 wallet concentration, inter-trade interval mean, social presence flags, `initial_market_cap_sol`, `is_mayhem_mode`, `hour_of_day`
+
+**Risk features** (from `token_risk`): RugCheck score/level/flags, mint/freeze authority, top holder %, LP locked; ST columns: score, rugged, jupiter_verified, top10_pct, holders, snipers/bundlers/insiders/dev counts and percentages, curve_pct
+
+**Social features** (from `social_mentions`): CryptoPanic mention counts at delay=0 and delay=1440
+
+**Macro features** (from `market_snapshots`): SOL/BTC price + 24h change/volume, `pumpfun_launch_rate_1h`
+
+### Targets
+
+| Target | Type | Description |
+|--------|------|-------------|
+| `market_cap_1h/2h/4h` | continuous | Raw market cap at delay |
+| `log_market_cap_1h` | continuous | log1p transform — used for regression |
+| `ath_market_cap_usd` | continuous | Highest market cap across all snapshots |
+| `log_ath_market_cap_usd` | continuous | log1p transform — used for regression |
+| `survived_24h` | binary | Had liquidity > 0 at 24h |
+| `reached_20k/50k/100k/1m` | binary | ATH market cap ≥ threshold |
+| `10x_by_4h` | binary | ATH mc ≥ 10× the 1h mc |
+
 ## Macro Features (market_snapshots → analyzer.py)
 
 | Feature | Source |

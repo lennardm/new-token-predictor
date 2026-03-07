@@ -5,6 +5,26 @@ Run after collecting data:
     python analyzer.py [--db data/tokens.db] [--out results/]
 """
 
+# ---------------------------------------------------------------------------
+# Version history
+# ---------------------------------------------------------------------------
+# v1.0  2025-02-28  Initial version — trade features + RugCheck + CryptoPanic
+#                   social + basic targets (market_cap_1h, ath, survived_24h)
+# v1.1  2025-03-01  SQL rewrite of load_trades_features (vectorised, no Python
+#                   loop); add ST risk columns; add reached_20k/50k/100k/1m
+#                   targets; drop broken 2x_by_1h; RandomForestClassifier for
+#                   binary targets; add is_mayhem_mode, initial_market_cap_sol,
+#                   hour_of_day features
+# v1.2  2025-03-07  Fix correlation_analysis (pairwise dropna, was always
+#                   empty); fix XGBoost (XGBClassifier for binary targets, was
+#                   producing NaN); log1p-transform market_cap targets for
+#                   regression; median imputation so all tokens are used instead
+#                   of being dropped for missing ST columns
+# ---------------------------------------------------------------------------
+
+__version__ = "1.2"
+__date__    = "2025-03-07"
+
 import argparse
 import json
 import os
@@ -22,125 +42,131 @@ warnings.filterwarnings("ignore")
 # ---------------------------------------------------------------------------
 
 def load_trades_features(conn: sqlite3.Connection) -> pd.DataFrame:
-    trades_df = pd.read_sql_query(
-        "SELECT token_mint, ts, tx_type, sol_amount, token_amount, wallet FROM trades",
+    """
+    Extract per-token features from trade data.
+
+    Phase 1: single SQL GROUP BY for all simple aggregations — avoids loading
+             5M+ raw rows into Python for counts/sums.
+    Phase 2: vectorised pandas for max drawdown (needs ordered price series).
+    Phase 3: wallet-rank approach for top-5 concentration (no apply() loop).
+    """
+    # --- Phase 1: SQL aggregations ---
+    agg = pd.read_sql_query(
+        """
+        SELECT
+            t.token_mint,
+            COUNT(CASE WHEN t.tx_type = 'buy'  THEN 1 END)                        AS buy_count,
+            COUNT(CASE WHEN t.tx_type = 'sell' THEN 1 END)                        AS sell_count,
+            COALESCE(SUM(CASE WHEN t.tx_type = 'buy'  THEN t.sol_amount END), 0)  AS total_buy_vol,
+            COALESCE(SUM(CASE WHEN t.tx_type = 'sell' THEN t.sol_amount END), 0)  AS total_sell_vol,
+            COALESCE(SUM(t.sol_amount), 0)                                         AS total_volume_sol,
+            COUNT(DISTINCT CASE WHEN t.tx_type = 'buy'  THEN t.wallet END)        AS unique_buyers,
+            COUNT(DISTINCT CASE WHEN t.tx_type = 'sell' THEN t.wallet END)        AS unique_sellers,
+            -- time-bucketed volumes (rel_ts = ts - created_at)
+            COALESCE(SUM(CASE WHEN t.ts - tok.created_at <=   60 THEN t.sol_amount END), 0) AS vol_1min_sol,
+            COALESCE(SUM(CASE WHEN t.ts - tok.created_at <=  300 THEN t.sol_amount END), 0) AS vol_5min_sol,
+            COALESCE(SUM(CASE WHEN t.ts - tok.created_at <= 1200 THEN t.sol_amount END), 0) AS vol_20min_sol,
+            COUNT(DISTINCT CASE WHEN t.tx_type = 'buy' AND t.ts - tok.created_at <=   60 THEN t.wallet END) AS buyers_1min,
+            COUNT(DISTINCT CASE WHEN t.tx_type = 'buy' AND t.ts - tok.created_at <=  300 THEN t.wallet END) AS buyers_5min,
+            -- price velocity: linear regression components, vectorised in Python below
+            COUNT(CASE WHEN t.tx_type = 'buy' AND t.token_amount > 0 THEN 1 END) AS _n_pv,
+            SUM(CASE WHEN t.tx_type = 'buy' AND t.token_amount > 0
+                THEN (t.ts - tok.created_at) END)                                 AS _sum_x,
+            SUM(CASE WHEN t.tx_type = 'buy' AND t.token_amount > 0
+                THEN t.sol_amount / t.token_amount END)                           AS _sum_y,
+            SUM(CASE WHEN t.tx_type = 'buy' AND t.token_amount > 0
+                THEN (t.ts - tok.created_at) * (t.sol_amount / t.token_amount) END) AS _sum_xy,
+            SUM(CASE WHEN t.tx_type = 'buy' AND t.token_amount > 0
+                THEN (t.ts - tok.created_at) * (t.ts - tok.created_at) END)      AS _sum_x2,
+            -- inter-trade interval: approximate mean as total_duration / (n-1)
+            CASE WHEN COUNT(*) > 1
+                THEN (MAX(t.ts) - MIN(t.ts)) / (COUNT(*) - 1)
+                ELSE NULL END                                                      AS interval_mean_sec,
+            -- token metadata
+            CASE WHEN tok.twitter_url  IS NOT NULL AND tok.twitter_url  != '' THEN 1 ELSE 0 END AS has_twitter,
+            CASE WHEN tok.telegram_url IS NOT NULL AND tok.telegram_url != '' THEN 1 ELSE 0 END AS has_telegram,
+            CASE WHEN tok.website_url  IS NOT NULL AND tok.website_url  != '' THEN 1 ELSE 0 END AS has_website,
+            tok.initial_market_cap_sol,
+            COALESCE(tok.is_mayhem_mode, 0)                                        AS is_mayhem_mode,
+            CAST((tok.created_at % 86400) / 3600 AS INTEGER)                      AS hour_of_day
+        FROM trades t
+        JOIN tokens tok ON tok.mint = t.token_mint
+        GROUP BY t.token_mint
+        """,
         conn,
     )
-    tokens_df = pd.read_sql_query(
-        "SELECT mint, created_at, twitter_url, telegram_url, website_url FROM tokens",
+
+    # Derived ratios
+    agg["buy_sell_ratio_count"] = agg["buy_count"] / (agg["sell_count"] + 1)
+    agg["buy_sell_ratio_vol"]   = agg["total_buy_vol"] / (agg["total_sell_vol"] + 1e-9)
+
+    # Price velocity: slope = (n·Σxy − Σx·Σy) / (n·Σx² − (Σx)²)
+    denom = agg["_n_pv"] * agg["_sum_x2"] - agg["_sum_x"] ** 2
+    agg["price_velocity"] = np.where(
+        (agg["_n_pv"] >= 2) & (denom.abs() > 1e-18),
+        (agg["_n_pv"] * agg["_sum_xy"] - agg["_sum_x"] * agg["_sum_y"]) / denom,
+        np.nan,
+    )
+    agg = agg.drop(columns=["_n_pv", "_sum_x", "_sum_y", "_sum_xy", "_sum_x2"])
+
+    # --- Phase 2: Max drawdown (vectorised cummax, needs ordered price series) ---
+    price_series = pd.read_sql_query(
+        """
+        SELECT t.token_mint,
+               t.sol_amount / t.token_amount AS price_sol
+        FROM trades t
+        WHERE t.tx_type = 'buy' AND t.token_amount > 0
+        ORDER BY t.token_mint, t.ts
+        """,
         conn,
     )
-    trades_df = trades_df.merge(
-        tokens_df.rename(columns={"mint": "token_mint"}),
-        on="token_mint",
-        how="left",
+    price_series["cum_max"] = price_series.groupby("token_mint")["price_sol"].cummax()
+    price_series["dd"] = (
+        (price_series["cum_max"] - price_series["price_sol"])
+        / (price_series["cum_max"] + 1e-18)
     )
-    trades_df["rel_ts"] = trades_df["ts"] - trades_df["created_at"]
+    max_dd = price_series.groupby("token_mint")["dd"].max().rename("max_drawdown")
 
-    rows = []
-    for mint, grp in trades_df.groupby("token_mint"):
-        token_row = tokens_df[tokens_df["mint"] == mint].iloc[0]
-        row = _extract_features(mint, grp, token_row)
-        rows.append(row)
+    # --- Phase 3: Top-5 wallet concentration (vectorised rank, no apply loop) ---
+    wallet_vols = pd.read_sql_query(
+        """
+        SELECT token_mint, wallet, SUM(sol_amount) AS vol
+        FROM trades
+        WHERE tx_type = 'buy'
+        GROUP BY token_mint, wallet
+        """,
+        conn,
+    )
+    wallet_vols["rank"] = wallet_vols.groupby("token_mint")["vol"].rank(
+        ascending=False, method="first"
+    )
+    top5_sum   = wallet_vols[wallet_vols["rank"] <= 5].groupby("token_mint")["vol"].sum()
+    total_sum  = wallet_vols.groupby("token_mint")["vol"].sum()
+    top5_conc  = (top5_sum / total_sum.replace(0, np.nan)).rename("top5_wallet_concentration")
 
-    return pd.DataFrame(rows).set_index("token_mint")
-
-
-def _extract_features(mint: str, grp: pd.DataFrame, token_row: pd.Series) -> dict:
-    buys = grp[grp["tx_type"] == "buy"]
-    sells = grp[grp["tx_type"] == "sell"]
-
-    total_buy_vol = buys["sol_amount"].sum()
-    total_sell_vol = sells["sol_amount"].sum()
-    total_vol = grp["sol_amount"].sum()
-
-    buy_count = len(buys)
-    sell_count = len(sells)
-
-    unique_buyers = buys["wallet"].nunique()
-    unique_sellers = sells["wallet"].nunique()
-
-    # Time-bucketed volumes
-    vol_1min = grp[grp["rel_ts"] <= 60]["sol_amount"].sum()
-    vol_5min = grp[grp["rel_ts"] <= 300]["sol_amount"].sum()
-    vol_20min = grp[grp["rel_ts"] <= 1200]["sol_amount"].sum()
-
-    buyers_1min = grp[(grp["rel_ts"] <= 60) & (grp["tx_type"] == "buy")]["wallet"].nunique()
-    buyers_5min = grp[(grp["rel_ts"] <= 300) & (grp["tx_type"] == "buy")]["wallet"].nunique()
-
-    # Price velocity (linear slope over first 20 min, using price_sol approximation)
-    price_df = grp[grp["token_amount"] > 0].copy()
-    price_df["price_sol"] = price_df["sol_amount"] / price_df["token_amount"]
-    price_df = price_df.sort_values("rel_ts")
-    price_velocity = np.nan
-    if len(price_df) >= 2:
-        slope, *_ = np.polyfit(price_df["rel_ts"], price_df["price_sol"], 1)
-        price_velocity = slope
-
-    # Max drawdown in first 20 min
-    max_drawdown = np.nan
-    if len(price_df) >= 2:
-        prices = price_df["price_sol"].values
-        running_max = np.maximum.accumulate(prices)
-        drawdowns = (running_max - prices) / (running_max + 1e-18)
-        max_drawdown = float(drawdowns.max())
-
-    # Top-5 wallet concentration (% of total buy volume)
-    wallet_vols = buys.groupby("wallet")["sol_amount"].sum().sort_values(ascending=False)
-    top5_vol = wallet_vols.head(5).sum()
-    top5_concentration = top5_vol / total_buy_vol if total_buy_vol > 0 else np.nan
-
-    # Inter-trade interval stats (bot fingerprint)
-    sorted_ts = np.sort(grp["ts"].values)
-    intervals = np.diff(sorted_ts)
-    interval_mean = float(intervals.mean()) if len(intervals) > 0 else np.nan
-    interval_std = float(intervals.std()) if len(intervals) > 1 else np.nan
-
-    # Social presence
-    has_twitter = 1 if token_row.get("twitter_url") else 0
-    has_telegram = 1 if token_row.get("telegram_url") else 0
-    has_website = 1 if token_row.get("website_url") else 0
-
-    return {
-        "token_mint": mint,
-        "buy_count": buy_count,
-        "sell_count": sell_count,
-        "buy_sell_ratio_count": buy_count / (sell_count + 1),
-        "buy_sell_ratio_vol": total_buy_vol / (total_sell_vol + 1e-9),
-        "unique_buyers": unique_buyers,
-        "unique_sellers": unique_sellers,
-        "total_volume_sol": total_vol,
-        "vol_1min_sol": vol_1min,
-        "vol_5min_sol": vol_5min,
-        "vol_20min_sol": vol_20min,
-        "buyers_1min": buyers_1min,
-        "buyers_5min": buyers_5min,
-        "price_velocity": price_velocity,
-        "max_drawdown": max_drawdown,
-        "top5_wallet_concentration": top5_concentration,
-        "interval_mean_sec": interval_mean,
-        "interval_std_sec": interval_std,
-        "has_twitter": has_twitter,
-        "has_telegram": has_telegram,
-        "has_website": has_website,
-    }
+    return agg.set_index("token_mint").join(max_dd).join(top5_conc)
 
 
 def load_risk_features(conn: sqlite3.Connection) -> pd.DataFrame:
     df = pd.read_sql_query(
         """
-        SELECT token_mint, rugcheck_score, rugcheck_level,
+        SELECT token_mint,
+               rugcheck_score, rugcheck_level,
                mint_authority_revoked, freeze_authority_revoked,
-               top_holder_pct, lp_locked, risks
+               top_holder_pct, lp_locked, risks,
+               st_score, st_rugged, st_jupiter_verified,
+               st_top10_pct, st_holders,
+               st_snipers_count, st_snipers_pct,
+               st_bundlers_count, st_bundlers_initial_pct,
+               st_insiders_count, st_insiders_pct,
+               st_dev_pct, st_curve_pct
         FROM token_risk
         """,
         conn,
     )
-    # Expand level to numeric
     level_map = {"good": 0, "warn": 1, "danger": 2}
     df["rugcheck_level_num"] = df["rugcheck_level"].map(level_map)
 
-    # Risk flag counts
     def risk_count(r):
         try:
             return len(json.loads(r))
@@ -160,6 +186,8 @@ def load_social_features(conn: sqlite3.Connection) -> pd.DataFrame:
         """,
         conn,
     )
+    if df.empty:
+        return pd.DataFrame(columns=["token_mint"]).set_index("token_mint")
     pivot = df.pivot_table(
         index="token_mint",
         columns="delay_minutes",
@@ -175,9 +203,12 @@ def load_macro_features(conn: sqlite3.Connection) -> pd.DataFrame:
         "SELECT mint, created_at FROM tokens", conn
     )
     market_df = pd.read_sql_query(
-        """SELECT ts, sol_price_usd, sol_change_24h_pct, sol_volume_24h_usd,
-                  btc_price_usd, btc_change_24h_pct
-           FROM market_snapshots ORDER BY ts ASC""",
+        """
+        SELECT ts, sol_price_usd, sol_change_24h_pct, sol_volume_24h_usd,
+               btc_price_usd, btc_change_24h_pct
+        FROM market_snapshots
+        ORDER BY ts ASC
+        """,
         conn,
     )
 
@@ -196,7 +227,7 @@ def load_macro_features(conn: sqlite3.Connection) -> pd.DataFrame:
         direction="backward",
     )
 
-    # Compute pumpfun_launch_rate_1h from the tokens table
+    # Compute pumpfun_launch_rate_1h from raw token timestamps
     created_arr = tokens_df["created_at"].values
     rates = [
         float(((created_arr >= t - 3600) & (created_arr < t)).sum())
@@ -220,21 +251,20 @@ def load_targets(conn: sqlite3.Connection) -> pd.DataFrame:
         """,
         conn,
     )
-    # Get launch market cap (first available snapshot or 60min)
-    launch_mc = df[df["delay_minutes"] == 60][["token_mint", "market_cap_usd"]].rename(
+
+    mc_1h = df[df["delay_minutes"] ==   60][["token_mint", "market_cap_usd"]].rename(
         columns={"market_cap_usd": "market_cap_1h"}
     )
-    mc_2h = df[df["delay_minutes"] == 120][["token_mint", "market_cap_usd"]].rename(
+    mc_2h = df[df["delay_minutes"] ==  120][["token_mint", "market_cap_usd"]].rename(
         columns={"market_cap_usd": "market_cap_2h"}
     )
-    mc_4h = df[df["delay_minutes"] == 240][["token_mint", "market_cap_usd"]].rename(
+    mc_4h = df[df["delay_minutes"] ==  240][["token_mint", "market_cap_usd"]].rename(
         columns={"market_cap_usd": "market_cap_4h"}
     )
     ath_mc = (
         df.groupby("token_mint")["ath_market_cap_usd"]
         .max()
         .reset_index()
-        .rename(columns={"ath_market_cap_usd": "ath_market_cap_usd"})
     )
     survived = (
         df[df["delay_minutes"] == 1440]
@@ -243,20 +273,31 @@ def load_targets(conn: sqlite3.Connection) -> pd.DataFrame:
         ]
     )
 
-    targets = launch_mc
+    targets = mc_1h
     for part in [mc_2h, mc_4h, ath_mc, survived]:
         targets = targets.merge(part, on="token_mint", how="left")
-
     targets = targets.set_index("token_mint")
 
-    # Binary labels
-    targets["2x_by_1h"] = (
-        targets["market_cap_1h"] >= 2 * targets["market_cap_1h"]  # placeholder — see note
-    ).astype(float)
-    # Proper 2x: we'd need launch market cap; use ath vs 1h as proxy
+    # Binary thresholds based on ATH market cap (project goal: $20k/$50k/$100k/$1M)
+    for threshold, label in [
+        (20_000,     "20k"),
+        (50_000,     "50k"),
+        (100_000,    "100k"),
+        (1_000_000,  "1m"),
+    ]:
+        targets[f"reached_{label}"] = (
+            targets["ath_market_cap_usd"].fillna(0) >= threshold
+        ).astype(int)
+
     targets["10x_by_4h"] = (
         targets["ath_market_cap_usd"] >= 10 * targets["market_cap_1h"]
     ).fillna(0).astype(int)
+
+    # Log-transformed regression targets — market cap is fat-tailed, log1p
+    # produces a near-normal distribution that regressors can actually fit
+    for col in ["market_cap_1h", "market_cap_2h", "market_cap_4h", "ath_market_cap_usd"]:
+        if col in targets:
+            targets[f"log_{col}"] = np.log1p(targets[col].clip(lower=0))
 
     return targets
 
@@ -269,26 +310,26 @@ def correlation_analysis(features: pd.DataFrame, targets: pd.DataFrame) -> None:
     print("\n=== Correlation Analysis ===\n")
     combined = features.join(targets, how="inner")
     feature_cols = features.columns.tolist()
-    target_cols = targets.columns.tolist()
 
-    for tcol in target_cols:
-        valid = combined[[tcol] + feature_cols].dropna()
-        if len(valid) < 5:
+    for tcol in targets.columns:
+        target_valid = combined[tcol].dropna()
+        if len(target_valid) < 5:
             continue
-        print(f"\n--- Target: {tcol}  (n={len(valid)}) ---")
+        print(f"\n--- Target: {tcol}  (n={len(target_valid)}) ---")
         rows = []
         for fcol in feature_cols:
-            x = valid[fcol]
-            y = valid[tcol]
-            if x.nunique() < 2:
+            # Pairwise dropna: only drop rows missing THIS feature or the target
+            pair = combined[[tcol, fcol]].dropna()
+            if len(pair) < 5 or pair[fcol].nunique() < 2:
                 continue
+            x, y = pair[fcol], pair[tcol]
             try:
-                pearson_r, pearson_p = stats.pearsonr(x, y)
+                pearson_r,  pearson_p  = stats.pearsonr(x, y)
                 spearman_r, spearman_p = stats.spearmanr(x, y)
                 rows.append({
-                    "feature": fcol,
-                    "pearson_r": pearson_r,
-                    "pearson_p": pearson_p,
+                    "feature":    fcol,
+                    "pearson_r":  pearson_r,
+                    "pearson_p":  pearson_p,
                     "spearman_r": spearman_r,
                     "spearman_p": spearman_p,
                 })
@@ -305,7 +346,7 @@ def correlation_analysis(features: pd.DataFrame, targets: pd.DataFrame) -> None:
 
 def ml_analysis(features: pd.DataFrame, targets: pd.DataFrame) -> None:
     try:
-        from sklearn.ensemble import RandomForestRegressor
+        from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
         from sklearn.model_selection import cross_val_score
         from sklearn.preprocessing import StandardScaler
         from sklearn.pipeline import Pipeline
@@ -317,35 +358,59 @@ def ml_analysis(features: pd.DataFrame, targets: pd.DataFrame) -> None:
     combined = features.join(targets, how="inner")
     feature_cols = [c for c in features.columns if combined[c].notna().sum() > 5]
 
-    for tcol in ["market_cap_1h", "ath_market_cap_usd", "survived_24h"]:
+    reg_targets  = ["log_market_cap_1h", "log_ath_market_cap_usd"]
+    clf_targets  = ["survived_24h", "reached_50k", "reached_100k"]
+
+    for tcol in reg_targets:
         if tcol not in combined:
             continue
         valid = combined[feature_cols + [tcol]].dropna()
         if len(valid) < 20:
             print(f"Skipping {tcol}: only {len(valid)} complete rows")
             continue
-        X = valid[feature_cols].values
-        y = valid[tcol].values
-
+        X, y = valid[feature_cols].values, valid[tcol].values
         pipe = Pipeline([
             ("scaler", StandardScaler()),
             ("rf", RandomForestRegressor(n_estimators=200, random_state=42, n_jobs=-1)),
         ])
-        cv_scores = cross_val_score(pipe, X, y, cv=5, scoring="r2")
+        cv = cross_val_score(pipe, X, y, cv=5, scoring="r2")
         pipe.fit(X, y)
-        importances = pipe.named_steps["rf"].feature_importances_
         imp_df = (
-            pd.DataFrame({"feature": feature_cols, "importance": importances})
+            pd.DataFrame({"feature": feature_cols,
+                          "importance": pipe.named_steps["rf"].feature_importances_})
             .sort_values("importance", ascending=False)
             .head(15)
         )
-        print(f"\n--- Target: {tcol}  CV R²={cv_scores.mean():.3f} ± {cv_scores.std():.3f} ---")
+        print(f"\n--- {tcol}  CV R²={cv.mean():.3f} ± {cv.std():.3f} ---")
+        print(imp_df.to_string(index=False, float_format="{:.4f}".format))
+
+    for tcol in clf_targets:
+        if tcol not in combined:
+            continue
+        valid = combined[feature_cols + [tcol]].dropna()
+        if len(valid) < 20:
+            print(f"Skipping {tcol}: only {len(valid)} complete rows")
+            continue
+        X, y = valid[feature_cols].values, valid[tcol].values
+        pipe = Pipeline([
+            ("scaler", StandardScaler()),
+            ("rf", RandomForestClassifier(n_estimators=200, random_state=42, n_jobs=-1)),
+        ])
+        cv = cross_val_score(pipe, X, y, cv=5, scoring="roc_auc")
+        pipe.fit(X, y)
+        imp_df = (
+            pd.DataFrame({"feature": feature_cols,
+                          "importance": pipe.named_steps["rf"].feature_importances_})
+            .sort_values("importance", ascending=False)
+            .head(15)
+        )
+        print(f"\n--- {tcol}  CV ROC-AUC={cv.mean():.3f} ± {cv.std():.3f} ---")
         print(imp_df.to_string(index=False, float_format="{:.4f}".format))
 
 
 def xgboost_analysis(features: pd.DataFrame, targets: pd.DataFrame) -> None:
     try:
-        import xgboost as xgb
+        from xgboost import XGBClassifier, XGBRegressor
         from sklearn.model_selection import cross_val_score
     except ImportError:
         print("xgboost not available — skipping XGBoost analysis")
@@ -355,30 +420,37 @@ def xgboost_analysis(features: pd.DataFrame, targets: pd.DataFrame) -> None:
     combined = features.join(targets, how="inner")
     feature_cols = [c for c in features.columns if combined[c].notna().sum() > 5]
 
-    for tcol, task in [
-        ("market_cap_1h", "reg:squarederror"),
-        ("survived_24h", "binary:logistic"),
-        ("10x_by_4h", "binary:logistic"),
-    ]:
+    reg_tasks = ["log_market_cap_1h", "log_ath_market_cap_usd"]
+    clf_tasks = ["survived_24h", "reached_50k", "reached_100k", "10x_by_4h"]
+
+    for tcol in reg_tasks:
         if tcol not in combined:
             continue
         valid = combined[feature_cols + [tcol]].dropna()
         if len(valid) < 20:
             continue
-        X = valid[feature_cols].values
-        y = valid[tcol].values
-        scoring = "r2" if "reg" in task else "roc_auc"
-        model = xgb.XGBRegressor(
-            objective=task,
-            n_estimators=200,
-            learning_rate=0.05,
-            max_depth=4,
-            random_state=42,
-            verbosity=0,
-            eval_metric="rmse" if "reg" in task else "logloss",
+        X, y = valid[feature_cols].values, valid[tcol].values
+        model = XGBRegressor(
+            n_estimators=200, learning_rate=0.05, max_depth=4,
+            random_state=42, verbosity=0,
         )
-        cv = cross_val_score(model, X, y, cv=5, scoring=scoring)
-        print(f"Target: {tcol}  {scoring}={cv.mean():.3f} ± {cv.std():.3f}  (n={len(valid)})")
+        cv = cross_val_score(model, X, y, cv=5, scoring="r2")
+        print(f"  {tcol:<30} r2={cv.mean():.3f} ± {cv.std():.3f}  (n={len(valid)})")
+
+    for tcol in clf_tasks:
+        if tcol not in combined:
+            continue
+        valid = combined[feature_cols + [tcol]].dropna()
+        if len(valid) < 20:
+            continue
+        X, y = valid[feature_cols].values, valid[tcol].values
+        model = XGBClassifier(
+            n_estimators=200, learning_rate=0.05, max_depth=4,
+            random_state=42, verbosity=0, eval_metric="logloss",
+            use_label_encoder=False,
+        )
+        cv = cross_val_score(model, X, y, cv=5, scoring="roc_auc")
+        print(f"  {tcol:<30} roc_auc={cv.mean():.3f} ± {cv.std():.3f}  (n={len(valid)})")
 
 
 # ---------------------------------------------------------------------------
@@ -387,9 +459,11 @@ def xgboost_analysis(features: pd.DataFrame, targets: pd.DataFrame) -> None:
 
 def main():
     parser = argparse.ArgumentParser(description="Analyze collected token data")
-    parser.add_argument("--db", default="data/tokens.db", help="SQLite DB path")
-    parser.add_argument("--out", default="results/", help="Output directory")
+    parser.add_argument("--db",  default="data/tokens.db", help="SQLite DB path")
+    parser.add_argument("--out", default="results/",       help="Output directory")
     args = parser.parse_args()
+
+    print(f"analyzer.py  v{__version__}  ({__date__})")
 
     if not os.path.exists(args.db):
         print(f"Database not found: {args.db}")
@@ -401,25 +475,31 @@ def main():
     conn.row_factory = sqlite3.Row
 
     print("Loading features...")
-    trade_features = load_trades_features(conn)
-    risk_features = load_risk_features(conn)
+    trade_features  = load_trades_features(conn)
+    risk_features   = load_risk_features(conn)
     social_features = load_social_features(conn)
-    macro_features = load_macro_features(conn)
-    targets = load_targets(conn)
+    macro_features  = load_macro_features(conn)
+    targets         = load_targets(conn)
 
     features = (
         trade_features
-        .join(risk_features, how="left")
+        .join(risk_features,   how="left")
         .join(social_features, how="left")
-        .join(macro_features, how="left")
+        .join(macro_features,  how="left")
+    )
+
+    # Median imputation for sparse columns (ST risk, macro) so rows aren't
+    # dropped just because SolanaTracker hadn't indexed a token yet
+    numeric_cols = features.select_dtypes(include="number").columns
+    features[numeric_cols] = features[numeric_cols].fillna(
+        features[numeric_cols].median()
     )
 
     print(f"Feature matrix: {features.shape}  Tokens with targets: {len(targets)}")
 
-    # Save feature matrix
     features.to_csv(os.path.join(args.out, "features.csv"))
     targets.to_csv(os.path.join(args.out, "targets.csv"))
-    print(f"Saved feature matrix and targets to {args.out}")
+    print(f"Saved to {args.out}")
 
     if len(features) < 5:
         print("Not enough data for analysis (< 5 tokens). Collect more first.")
